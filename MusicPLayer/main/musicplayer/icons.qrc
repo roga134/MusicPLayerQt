@@ -1,0 +1,12 @@
+<RCC>
+    <qresource prefix="/icons">
+        <file>image/play-buttton.png</file>
+        <file>image/pause.png</file>
+        <file>image/next.png</file>
+        <file>image/prev.png</file>
+        <file>image/mute.png</file>
+        <file>image/unmute.png</file>
+        <file>image/shuffle.png</file>
+        <file>image/shuffle-off.png</file>
+    </qresource>
+</RCC>

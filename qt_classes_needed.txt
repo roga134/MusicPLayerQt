@@ -1,0 +1,29 @@
+2. Music Player
+- QMediaPlayer
+- QMediaPlaylist
+- QAudioOutput
+- QSlider
+- QListView or QListWidget
+- QStringListModel or QStandardItemModel
+- QGraphicsView + QGraphicsScene (or QOpenGLWidget)
+
+3. Online “Jukebox” Synchronization
+- QTcpSocket or QUdpSocket
+- QHostAddress + QNetworkDatagram (for UDP)
+- QDataStream
+- QTimer
+
+4. Movie Player
+- QMediaPlayer
+- QVideoWidget
+- QMediaPlaylist
+- QSlider
+- QPushButton
+- QLabel
+- QComboBox
+
+5. Bonus & Final Notes
+- QUndoStack + QUndoCommand
+- QThread (or QtConcurrent)
+- QObject (signals & slots)
+- QFileDialog
