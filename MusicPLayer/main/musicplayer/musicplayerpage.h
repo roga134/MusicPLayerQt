@@ -24,13 +24,6 @@ private slots:
 
 //     void on_pushButton_stop_clicked();
 
-//     void on_pushButton_remove_clicked();
-
-//     void on_volumesSlider_valueChanges();
-
-//     void on_pushButton_mute_clicked();
-
-//     void on_pushButton_shuffle_clicked();
 
 //     void on_pushButton_repeat_clicked();
 
@@ -38,11 +31,11 @@ private slots:
 
 //     void on_pushButton_redo_clicked();
 
-//     void on_positionChanged(qint64 position);
+    void on_positionChanged(qint64 position);
 
-//     void on_durationChanged( qint64 duration);
+    void on_durationChanged( qint64 duration);
 
-//     void on_mediaStatusChanged(QMediaPlayer::MediaStatus status);
+    void on_mediaStatusChanged(QMediaPlayer::MediaStatus status);
 
 //     void on_addTo_QueueButton_clicked();
 
@@ -56,12 +49,26 @@ private slots:
 
      void on_pushButton_next_clicked();
 
- private:
+    void on_actionRemove_Track_triggered();
+
+     void on_pushButton_mute_clicked();
+
+    void on_volum_valueChanged(int value);
+
+
+    void on_time_sliderMoved(int position);
+
+    void on_pushButton_shufle_clicked();
+
+private:
     Ui::musicplayerpage *ui;
     QMediaPlayer *player;
     QAudioOutput *audioOutput;
     QStandardItemModel *playlistModel ;
      bool isPlay = false ;
+
+    std::vector<int> shuffledIndices;
+    int shuffleIndex = 0;
 
     std::map<QString ,std::list<QUrl>> playlists;
     std::list<QUrl>::iterator currentTrack ;
@@ -88,7 +95,7 @@ private slots:
 //     std::list<QUrl>::iterator find_in_playlist(const QUrl& url);
   //  void save_playlist_to_file();
    // void load_playlists_from_file();
-   //void handle_media_error(const QString errorMessage);
+    QString formatTime(qint64 milliseconds);
 
 };
 

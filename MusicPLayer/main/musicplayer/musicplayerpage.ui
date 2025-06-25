@@ -193,7 +193,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QPushButton" name="pushButton_mode">
+               <widget class="QPushButton" name="pushButton_shufle">
                 <property name="text">
                  <string/>
                 </property>
@@ -294,7 +294,7 @@
      <addaction name="actionrepeat_trak"/>
     </widget>
     <addaction name="actionAdd_Track"/>
-    <addaction name="actionAdd_folder"/>
+    <addaction name="actionRemove_Track"/>
     <addaction name="separator"/>
     <addaction name="menuShuffel_mode"/>
     <addaction name="menuRepeat_mode"/>
@@ -338,9 +338,9 @@
     <string>Add Track</string>
    </property>
   </action>
-  <action name="actionAdd_folder">
+  <action name="actionRemove_Track">
    <property name="text">
-    <string>Add folder ...</string>
+    <string>Remove Track</string>
    </property>
   </action>
   <action name="actionDon_t_shuffel">

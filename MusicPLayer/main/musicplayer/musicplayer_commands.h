@@ -26,7 +26,7 @@
 
 enum RepeatMode
 {
-    NoRepeat,RepratOne ,RepeatAll
+    NoRepeat,RepreatOne ,RepeatAll
 };
 
 // command pattern
@@ -73,23 +73,6 @@ private:
     QMediaPlayer* player;
 };
 
-
-class StopCommand : public Command
-{
-public:
-    StopCommand(QMediaPlayer* player);
-
-    void execute() override ;
-
-    void undo() override ;
-
-    QString description() const override ;
-
-private:
-    QMediaPlayer* player;
-};
-
-
 class AddTrackCommand : public Command
 {
 public:
@@ -128,7 +111,7 @@ private:
 class NextTrackCommand : public Command {
 public:
     NextTrackCommand(QMediaPlayer* player, std::list<QUrl>&playlist, std::list<QUrl>::iterator& currentTrack,
-                     QStandardItemModel* model, RepeatMode repeatMode, bool shuffle);
+                     QStandardItemModel* model, RepeatMode repeatMode, bool shuffle,std::vector<int> shuffledIndices, int shuffleIndex);
 
     void execute() override ;
 
@@ -275,7 +258,7 @@ private:
 class ToggleShuffleCommand : public Command
 {
 public:
-    ToggleShuffleCommand(bool& shuffleEnabled, std::list<QUrl>& playlist, std::list<QUrl>::iterator& currentTrack);
+    ToggleShuffleCommand(bool& shuffleEnabled, std::list<QUrl>& playlist, std::list<QUrl>::iterator& currentTrack,std::vector<int> shuffledIndices, int shuffleIndex);
 
 
     void execute() override ;

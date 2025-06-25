@@ -6,7 +6,10 @@ PlayCommand::PlayCommand(QMediaPlayer* player, std::list<QUrl>::iterator track)
 
 void PlayCommand::execute()
 {
+    if(player->source() != *track)
+    {
         player->setSource(*track);
+    }
         player->play();
 }
 
@@ -47,32 +50,6 @@ QString PauseCommand::description() const
 {
     return "Pause";
 }
-
-
-// StopCommand class
-StopCommand::StopCommand(QMediaPlayer* player) : player(player) {}
-
-void StopCommand::execute()
-{
-    if (player)
-    {
-        player->stop();
-    }
-}
-
-void StopCommand::undo()
-{
-    if (player)
-    {
-        player->play();
-    }
-}
-
-QString StopCommand::description() const
-{
-    return "Stop";
-}
-
 
 // AddTrackCommand class
 AddTrackCommand::AddTrackCommand(std::list<QUrl>& playlist, QStandardItemModel* model, const QUrl& track)
@@ -135,9 +112,9 @@ QString RemoveTrackCommand::description() const
 
 //NextTrackcommand class
 NextTrackCommand::NextTrackCommand(QMediaPlayer* player, std::list<QUrl>&playlist, std::list<QUrl>::iterator& currentTrack,
-                 QStandardItemModel* model, RepeatMode repeatMode, bool shuffle)
+                 QStandardItemModel* model, RepeatMode repeatMode, bool shuffle,std::vector<int> shuffledIndices, int shuffleIndex)
     : player(player), playlist(playlist), currentTrack(currentTrack), model(model),
-    repeatMode(repeatMode), shuffle(shuffle), originalTrack(currentTrack) {}
+    repeatMode(repeatMode), shuffle(shuffle), originalTrack(currentTrack) ,shuffleIndex(shuffleIndex) ,shuffledIndices(shuffledIndices){}
 
 void NextTrackCommand::execute()
 {
@@ -146,26 +123,33 @@ void NextTrackCommand::execute()
     // Save original state for undo
     originalTrack = currentTrack;
 
-    if (shuffle) {
-        // Initialize shuffled indices if empty
-        if (shuffledIndices.empty()) {
+    if (shuffle)
+    {
+        if (shuffledIndices.empty())
+        {
             shuffledIndices.resize(playlist.size());
             std::iota(shuffledIndices.begin(), shuffledIndices.end(), 0);
-            std::random_shuffle(shuffledIndices.begin(), shuffledIndices.end());
+            std::shuffle(shuffledIndices.begin(), shuffledIndices.end(),std::mt19937{std::random_device{}()});
+            shuffleIndex =0;
         }
-
-        shuffleIndex = (shuffleIndex + 1) % shuffledIndices.size();
-        currentTrack = playlist.begin();
-        std::advance(currentTrack, shuffledIndices[shuffleIndex]);
+        else
+        {
+            shuffleIndex = (shuffleIndex + 1) % shuffledIndices.size();
+        }
+        int nextIndex = shuffledIndices[shuffleIndex];
+        auto it = playlist.begin();
+        std::advance(it, nextIndex);
+        currentTrack = it ;
     }
-    else {
-        ++currentTrack;
+    else
+    {
+        currentTrack ++;
 
         if (currentTrack == playlist.end()) {
             if (repeatMode == RepeatMode::RepeatAll) {
                 currentTrack = playlist.begin();
             } else {
-                currentTrack = originalTrack; // Revert
+                currentTrack = originalTrack;
                 return;
             }
         }
@@ -408,9 +392,9 @@ QString SetRepeatModeCommand::description() const
 
 // ToggleShuffleCommand  class
 ToggleShuffleCommand::ToggleShuffleCommand(bool& shuffleEnabled, std::list<QUrl>& playlist,
-                     std::list<QUrl>::iterator& currentTrack)
+                     std::list<QUrl>::iterator& currentTrack ,std::vector<int> shuffledIndices, int shuffleIndex)
     : shuffleEnabled(shuffleEnabled), playlist(playlist),
-    currentTrack(currentTrack), originalTrack(currentTrack) {}
+    currentTrack(currentTrack), originalTrack(currentTrack) ,shuffleIndex(shuffleIndex) ,shuffledIndices(shuffledIndices) {}
 
 void ToggleShuffleCommand::execute()
 {
@@ -418,18 +402,25 @@ void ToggleShuffleCommand::execute()
 
     if (shuffleEnabled)
     {
-        // Generate shuffled indices
         shuffledIndices.resize(playlist.size());
         std::iota(shuffledIndices.begin(), shuffledIndices.end(), 0);
         std::shuffle(shuffledIndices.begin(), shuffledIndices.end(), std::mt19937{std::random_device{}()});
 
-        // Find current track in shuffled order
         int currentPos = std::distance(playlist.begin(), currentTrack);
         auto it = std::find(shuffledIndices.begin(), shuffledIndices.end(), currentPos);
         if (it != shuffledIndices.end())
         {
             shuffleIndex = std::distance(shuffledIndices.begin(), it);
         }
+        else
+        {
+            shuffleIndex =0;
+        }
+    }
+    else
+    {
+        shuffledIndices.clear();
+        shuffleIndex =0;
     }
 }
 

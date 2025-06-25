@@ -10,7 +10,7 @@ musicplayerpage::musicplayerpage(QWidget *parent)
     ui->pushButton_next->setIcon(QIcon(":/icons/image/prev.png"));
     ui->pushButton_prev->setIcon(QIcon(":/icons/image/next.png"));
     ui->pushButton_mute->setIcon(QIcon(":/icons/image/unmute.png"));
-    ui->pushButton_mode->setIcon(QIcon(":/icons/image/shuffle-off.png"));
+    ui->pushButton_shufle->setIcon(QIcon(":/icons/image/shuffle-off.png"));
     ui->label_played->setMinimumWidth(40);
     ui->label_remaning->setMinimumWidth(40);
     ui->label_played->setText("00:00");
@@ -20,7 +20,10 @@ musicplayerpage::musicplayerpage(QWidget *parent)
 
     player = new QMediaPlayer(this);
     audioOutput = new QAudioOutput(this);
+    ui->volum->setValue(50);
+    audioOutput->setVolume(0.5);
     player->setAudioOutput(audioOutput);
+
 
     // Setup Playlist Model
     playlistModel = new QStandardItemModel(this);
@@ -40,6 +43,10 @@ musicplayerpage::musicplayerpage(QWidget *parent)
 
     repeatMode = RepeatMode::NoRepeat;
 
+     connect(player, &QMediaPlayer::positionChanged, this, &musicplayerpage::on_positionChanged);
+     connect(player, &QMediaPlayer::durationChanged, this, &musicplayerpage::on_durationChanged);
+    connect(player, &QMediaPlayer::mediaStatusChanged, this, &musicplayerpage::on_mediaStatusChanged);
+
 }
 
 musicplayerpage::~musicplayerpage()
@@ -49,5 +56,20 @@ musicplayerpage::~musicplayerpage()
     delete playlistModel;
     delete ui;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

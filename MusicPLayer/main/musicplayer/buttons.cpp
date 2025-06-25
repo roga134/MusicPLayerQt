@@ -34,6 +34,7 @@ void musicplayerpage::on_pushButton_play_clicked()
     if(isPlay)
     {
         execute_Command(std::make_unique<PauseCommand>(player));
+        ui->pushButton_play->setIcon(QIcon(":/icons/image/pause.png"));
         isPlay = false;
     }
     else
@@ -46,6 +47,7 @@ void musicplayerpage::on_pushButton_play_clicked()
             }
             execute_Command(std::make_unique<PlayCommand>(player, currentTrack));
             isPlay = true ;
+             ui->pushButton_play->setIcon(QIcon(":/icons/image/play-buttton.png"));
         }
     }
 }
@@ -75,6 +77,62 @@ void musicplayerpage::on_pushButton_next_clicked()
         currentTrack,
         playlistModel,
         repeatMode,
-        shuffleMode));
+        shuffleMode,
+        shuffledIndices,
+         shuffleIndex ));
 }
 
+
+void musicplayerpage::on_actionRemove_Track_triggered()
+{
+        if (playlists[currentPlaylistName].empty() || currentTrack == playlists[currentPlaylistName].end())
+            return;
+
+        int row = std::distance(playlists[currentPlaylistName].begin(), currentTrack);
+        execute_Command(std::make_unique<RemoveTrackCommand>(
+            playlists[currentPlaylistName],
+            playlistModel,
+            currentTrack
+            ));
+
+
+        if (playlists[currentPlaylistName].empty())
+        {
+            currentTrack = playlists[currentPlaylistName].end();
+        }
+        else {
+            currentTrack = playlists[currentPlaylistName].begin();
+        }
+
+}
+
+void musicplayerpage::on_pushButton_mute_clicked()
+{
+    muted = !muted;
+    if (muted) {
+        previousVolume = audioOutput->volume() * 100;
+        audioOutput->setVolume(0);
+        ui->volum->setValue(0);
+        ui->pushButton_mute->setIcon(QIcon(":/icons/image/mute.png"));
+    } else {
+        audioOutput->setVolume(previousVolume / 100.0);
+        ui->volum->setValue(previousVolume);
+        ui->pushButton_mute->setIcon(QIcon(":/icons/image/unmute.png"));
+    }
+
+}
+
+void musicplayerpage::on_pushButton_shufle_clicked()
+{
+    execute_Command(std::make_unique<ToggleShuffleCommand>(shuffleMode,playlists[currentPlaylistName],currentTrack,shuffledIndices,shuffleIndex));
+
+    if(shuffleMode)
+    {
+        ui->pushButton_shufle->setIcon(QIcon(":/icons/image/shuffle.png"));
+    }
+    else
+    {
+        ui->pushButton_shufle->setIcon(QIcon(":/icons/image/shuffle-off.png"));
+    }
+
+}
