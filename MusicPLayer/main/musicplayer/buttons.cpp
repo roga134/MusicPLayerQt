@@ -36,11 +36,21 @@ void musicplayerpage::on_pushButton_play_clicked()
     }
     else
     {
+        audioSamples.clear();
+
+        //->stop();
+
+        if(currentTrack == playlists[currentPlaylistName].end())
+        {
+            qDebug() << "Invalid currentTrack! Cannot play.";
+            return;
+        }
+
+        //decoder->setSource(*currentTrack);
+        //decoder->start();
+
         if (!playlists[currentPlaylistName].empty())
         {
-            if (currentTrack == playlists[currentPlaylistName].end())
-                currentTrack = playlists[currentPlaylistName].begin();
-
             execute_Command(std::make_unique<PlayCommand>(player, currentTrack));
             lastTrack = currentTrack;
             ui->pushButton_play->setIcon(QIcon(":/icons/image/pause.png"));
@@ -48,10 +58,17 @@ void musicplayerpage::on_pushButton_play_clicked()
     }
 }
 
+
 void musicplayerpage::onItemDoubleClicked(const QModelIndex &index)
 {
     auto &playlist = playlists[currentPlaylistName];
     int row = index.row();
+
+    if(row < 0 || row >= static_cast<int>(playlist.size()))
+    {
+        qDebug() << "Double clicked invalid index";
+        return;
+    }
 
     auto it = playlist.begin();
     std::advance(it, row);
@@ -61,6 +78,7 @@ void musicplayerpage::onItemDoubleClicked(const QModelIndex &index)
     lastTrack = currentTrack;
     ui->pushButton_play->setIcon(QIcon(":/icons/image/pause.png"));
 }
+
 
 void musicplayerpage::execute_Command(std::unique_ptr<Command> command)
 {

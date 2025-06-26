@@ -82,14 +82,22 @@ private slots:
     void on_actionDon_t_shuffel_triggered();
     void on_actionshuffel_all_triggered();
 
+    //void processBuffer();
+    //void updateVisualizer();
 private:
     Ui::musicplayerpage *ui;
     QMediaPlayer *player;
     QAudioOutput *audioOutput;
     QStandardItemModel *playlistModel ;
 
+    QVector<qint16> audioSamples;
+    QAudioDecoder* decoder = nullptr;
+    QTimer* timer = nullptr;
+    VisualizerWidget* visualizerWidget = nullptr;
+
+
     std::vector<int> shuffledIndices;
-    int shuffleIndex = 0;
+    int shuffleIndex = 0;    
 
     std::map<QString ,std::list<QUrl>> playlists;
     std::list<QUrl>::iterator currentTrack ;
@@ -110,9 +118,6 @@ private:
     QStack<QModelIndex> directoryHistory;
     QStack<QModelIndex> forwardHistory;
     bool fileclied = false;
-
-
-
 
     void execute_Command(std::unique_ptr<Command> command);
 //     void update_undo_and_redo_Button();

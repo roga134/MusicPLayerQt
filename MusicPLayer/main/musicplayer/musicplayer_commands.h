@@ -24,6 +24,12 @@
 #include <QDir>
 #include <QFileSystemModel>
 #include <QStack>
+#include <QTimer>
+#include <fstream>
+#include <QRandomGenerator>
+#include <QAudioDecoder>
+#include <QAudioBuffer>
+#include "VisualizerWidget.h"
 
 
 enum RepeatMode

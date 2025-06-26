@@ -18,6 +18,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
     Files.cpp \
+    VisualizerWidget.cpp \
     buttons.cpp \
     main.cpp \
     musicplayer_commands.cpp \
@@ -27,6 +28,7 @@ SOURCES += \
     toolbar.cpp
 
 HEADERS += \
+    VisualizerWidget.h \
     musicplayer_commands.h \
     musicplayerpage.h
 

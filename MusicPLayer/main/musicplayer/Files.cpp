@@ -22,7 +22,6 @@ void musicplayerpage::on_actionopen_file_triggered()
     }
 }
 
-
 void musicplayerpage::on_pushButton_files_clicked()
 {
     fileclied = true;

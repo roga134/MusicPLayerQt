@@ -19,6 +19,19 @@ musicplayerpage::musicplayerpage(QWidget *parent)
     ui->label_played->setText("00:00");
     ui->label_remaning->setText("00:00");
 
+    /*
+    timer = new QTimer(this);
+    decoder = new QAudioDecoder(this);
+    connect(timer, &QTimer::timeout, this, &musicplayerpage::updateVisualizer);
+    timer->start(30);
+    connect(decoder, &QAudioDecoder::bufferReady, this, &musicplayerpage::processBuffer);
+    visualizerWidget = new VisualizerWidget(this);
+    visualizerWidget->setFixedHeight(100);
+    visualizerWidget->setGeometry(0, 0,ui->widget->width(),ui->widget->height());
+    QVBoxLayout* layout = new QVBoxLayout(ui->widget);
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->addWidget(visualizerWidget);
+    visualizerWidget->show();*/
 
     player = new QMediaPlayer(this);
     audioOutput = new QAudioOutput(this);
@@ -51,6 +64,7 @@ musicplayerpage::musicplayerpage(QWidget *parent)
     connect(ui->playlist, &QTreeView::doubleClicked, this, &musicplayerpage::save_playlist_to_file);
     connect(ui->listSongs, &QListView::doubleClicked, this, &musicplayerpage::onItemDoubleClicked);
     connect(ui->volum, &QSlider::valueChanged, this, &musicplayerpage::setvolum );
+
 }
 
 musicplayerpage::~musicplayerpage()
