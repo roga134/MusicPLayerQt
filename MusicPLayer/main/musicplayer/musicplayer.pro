@@ -23,7 +23,8 @@ SOURCES += \
     musicplayer_commands.cpp \
     musicplayerpage.cpp \
     sound.cpp \
-    time.cpp
+    time.cpp \
+    toolbar.cpp
 
 HEADERS += \
     musicplayer_commands.h \

@@ -18,7 +18,6 @@ public:
     ~musicplayerpage();
 
 private slots:
-
     void on_pushButton_play_clicked();
 
 
@@ -60,18 +59,41 @@ private slots:
 
     void on_pushButton_shufle_clicked();
 
+    void on_pushButton_files_clicked();
+
+    void save_playlist_to_file(const QModelIndex &index);
+
+    void on_pushButton_back_clicked();
+
+    void on_actionopen_file_triggered();
+
+    void onItemDoubleClicked(const QModelIndex &index);
+
+    void setvolum(int value);
+
+    void on_pushButton_home_clicked();
+
+    void on_pushButton_forward_clicked();
+
+    void on_actionprevios_song_triggered();
+    void on_actionplay_triggered();
+    void on_actionnext_trak_triggered();
+    void on_actionexit_triggered();
+    void on_actionDon_t_shuffel_triggered();
+    void on_actionshuffel_all_triggered();
+
 private:
     Ui::musicplayerpage *ui;
     QMediaPlayer *player;
     QAudioOutput *audioOutput;
     QStandardItemModel *playlistModel ;
-     bool isPlay = false ;
 
     std::vector<int> shuffledIndices;
     int shuffleIndex = 0;
 
     std::map<QString ,std::list<QUrl>> playlists;
     std::list<QUrl>::iterator currentTrack ;
+    std::list<QUrl>::iterator lastTrack;
     std::queue<QUrl> temporary;
 
 
@@ -83,6 +105,12 @@ private:
 
     std::stack<std::unique_ptr<Command>> undoStack ;
     std::stack<std::unique_ptr<Command>> redoStack ;
+
+    QFileSystemModel *fileSystemModel;
+    QStack<QModelIndex> directoryHistory;
+    QStack<QModelIndex> forwardHistory;
+    bool fileclied = false;
+
 
 
 

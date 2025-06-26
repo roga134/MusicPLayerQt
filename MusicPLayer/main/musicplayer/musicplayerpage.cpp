@@ -11,11 +11,13 @@ musicplayerpage::musicplayerpage(QWidget *parent)
     ui->pushButton_prev->setIcon(QIcon(":/icons/image/next.png"));
     ui->pushButton_mute->setIcon(QIcon(":/icons/image/unmute.png"));
     ui->pushButton_shufle->setIcon(QIcon(":/icons/image/shuffle-off.png"));
+    ui->pushButton_back->setIcon(QIcon(":/icons/image/back.png"));
+    ui->pushButton_home->setIcon(QIcon(":/icons/image/home.png"));
+    ui->pushButton_forward->setIcon(QIcon(":/icons/image/forward.png"));
     ui->label_played->setMinimumWidth(40);
     ui->label_remaning->setMinimumWidth(40);
     ui->label_played->setText("00:00");
     ui->label_remaning->setText("00:00");
-
 
 
     player = new QMediaPlayer(this);
@@ -28,11 +30,11 @@ musicplayerpage::musicplayerpage(QWidget *parent)
     // Setup Playlist Model
     playlistModel = new QStandardItemModel(this);
     ui->playlist->setModel(playlistModel);
-   playlistModel = new QStandardItemModel(this);
-   playlistModel->setHorizontalHeaderLabels({"Track", "Duration"});
-   ui->playlist->setModel(playlistModel);
-   ui->playlist->setSelectionMode(QAbstractItemView::SingleSelection);
-   ui->playlist->setSelectionBehavior(QAbstractItemView::SelectRows);
+    playlistModel = new QStandardItemModel(this);
+    playlistModel->setHorizontalHeaderLabels({"Track", "Duration"});
+    ui->playlist->setSelectionMode(QAbstractItemView::SingleSelection);
+    ui->playlist->setSelectionBehavior(QAbstractItemView::SelectRows);
+    ui->listSongs->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
 
     // Initialize default playlist
@@ -43,10 +45,12 @@ musicplayerpage::musicplayerpage(QWidget *parent)
 
     repeatMode = RepeatMode::NoRepeat;
 
-     connect(player, &QMediaPlayer::positionChanged, this, &musicplayerpage::on_positionChanged);
-     connect(player, &QMediaPlayer::durationChanged, this, &musicplayerpage::on_durationChanged);
+    connect(player, &QMediaPlayer::positionChanged, this, &musicplayerpage::on_positionChanged);
+    connect(player, &QMediaPlayer::durationChanged, this, &musicplayerpage::on_durationChanged);
     connect(player, &QMediaPlayer::mediaStatusChanged, this, &musicplayerpage::on_mediaStatusChanged);
-
+    connect(ui->playlist, &QTreeView::doubleClicked, this, &musicplayerpage::save_playlist_to_file);
+    connect(ui->listSongs, &QListView::doubleClicked, this, &musicplayerpage::onItemDoubleClicked);
+    connect(ui->volum, &QSlider::valueChanged, this, &musicplayerpage::setvolum );
 }
 
 musicplayerpage::~musicplayerpage()
@@ -56,20 +60,3 @@ musicplayerpage::~musicplayerpage()
     delete playlistModel;
     delete ui;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -2,15 +2,20 @@
 
 // PlayCommand class
 PlayCommand::PlayCommand(QMediaPlayer* player, std::list<QUrl>::iterator track)
-    : player(player), track(track) {}
+    : player(player) , track(track) {}
 
 void PlayCommand::execute()
 {
-    if(player->source() != *track)
+    if(player->playbackState() == QMediaPlayer::PausedState)
     {
-        player->setSource(*track);
-    }
         player->play();
+    }
+    else
+    {
+        qDebug() << "Playing track:" << track->toString();
+        player->setSource(*track);
+        player->play();
+    }
 }
 
 void PlayCommand::undo()
@@ -55,14 +60,14 @@ QString PauseCommand::description() const
 AddTrackCommand::AddTrackCommand(std::list<QUrl>& playlist, QStandardItemModel* model, const QUrl& track)
     : playlist(playlist), model(model), track(track) {}
 
-void AddTrackCommand::execute()
+std::list<QUrl>::iterator AddTrackCommand::executeWithResult()
 {
     playlist.push_back(track);
     QStandardItem* item = new QStandardItem(track.fileName());
     item->setData(track.toString(), Qt::UserRole);
     model->appendRow(item);
-
-    qDebug() << "Track added :"<< track ;
+    qDebug() << "Track added:" << track;
+    return std::prev(playlist.end());
 }
 
 void AddTrackCommand::undo()
@@ -111,10 +116,12 @@ QString RemoveTrackCommand::description() const
 
 
 //NextTrackcommand class
-NextTrackCommand::NextTrackCommand(QMediaPlayer* player, std::list<QUrl>&playlist, std::list<QUrl>::iterator& currentTrack,
-                 QStandardItemModel* model, RepeatMode repeatMode, bool shuffle,std::vector<int> shuffledIndices, int shuffleIndex)
+NextTrackCommand::NextTrackCommand(QMediaPlayer* player, std::list<QUrl>& playlist, std::list<QUrl>::iterator& currentTrack,
+                                   QStandardItemModel* model, RepeatMode repeatMode, bool shuffle,
+                                   std::vector<int>& shuffledIndices, int& shuffleIndex)
     : player(player), playlist(playlist), currentTrack(currentTrack), model(model),
-    repeatMode(repeatMode), shuffle(shuffle), originalTrack(currentTrack) ,shuffleIndex(shuffleIndex) ,shuffledIndices(shuffledIndices){}
+    repeatMode(repeatMode), shuffle(shuffle),
+    shuffledIndices(shuffledIndices), shuffleIndex(shuffleIndex) {}
 
 void NextTrackCommand::execute()
 {
@@ -129,8 +136,8 @@ void NextTrackCommand::execute()
         {
             shuffledIndices.resize(playlist.size());
             std::iota(shuffledIndices.begin(), shuffledIndices.end(), 0);
-            std::shuffle(shuffledIndices.begin(), shuffledIndices.end(),std::mt19937{std::random_device{}()});
-            shuffleIndex =0;
+            std::shuffle(shuffledIndices.begin(), shuffledIndices.end(), std::mt19937{std::random_device{}()});
+            shuffleIndex = 0;
         }
         else
         {
@@ -139,7 +146,7 @@ void NextTrackCommand::execute()
         int nextIndex = shuffledIndices[shuffleIndex];
         auto it = playlist.begin();
         std::advance(it, nextIndex);
-        currentTrack = it ;
+        currentTrack = it;
     }
     else
     {
@@ -155,15 +162,11 @@ void NextTrackCommand::execute()
         }
     }
 
-    if (player) {
+    if (player)
+    {
         player->stop();
         player->setSource(*currentTrack);
         player->play();
-
-        // Update UI
-        //int row = std::distance(playlist.begin(), currentTrack);
-       // QModelIndex index = model->index(row, 0);
-       // emit model->dataChanged(index, index, {Qt::BackgroundRole});
     }
 }
 
@@ -185,10 +188,13 @@ QString NextTrackCommand::description() const
 
 // PreviousCommand class
 
-PreviousTrackCommand::PreviousTrackCommand(QMediaPlayer* player, std::list<QUrl> playlist, std::list<QUrl>::iterator& currentTrack,
-                     QStandardItemModel* model, RepeatMode repeatMode, bool shuffle)
+PreviousTrackCommand::PreviousTrackCommand(QMediaPlayer* player, std::list<QUrl>& playlist, std::list<QUrl>::iterator& currentTrack,
+                                           QStandardItemModel* model, RepeatMode repeatMode, bool shuffle,
+                                           std::vector<int>& shuffledIndices, int& shuffleIndex)
     : player(player), playlist(playlist), currentTrack(currentTrack), model(model),
-    repeatMode(repeatMode), shuffle(shuffle), originalTrack(currentTrack) {}
+    repeatMode(repeatMode), shuffle(shuffle),
+    shuffledIndices(shuffledIndices), shuffleIndex(shuffleIndex),
+    originalTrack(currentTrack) {}
 
 void PreviousTrackCommand::execute()
 {
@@ -392,9 +398,10 @@ QString SetRepeatModeCommand::description() const
 
 // ToggleShuffleCommand  class
 ToggleShuffleCommand::ToggleShuffleCommand(bool& shuffleEnabled, std::list<QUrl>& playlist,
-                     std::list<QUrl>::iterator& currentTrack ,std::vector<int> shuffledIndices, int shuffleIndex)
-    : shuffleEnabled(shuffleEnabled), playlist(playlist),
-    currentTrack(currentTrack), originalTrack(currentTrack) ,shuffleIndex(shuffleIndex) ,shuffledIndices(shuffledIndices) {}
+                                           std::list<QUrl>::iterator& currentTrack,
+                                           std::vector<int>& shuffledIndices, int& shuffleIndex)
+    : shuffleEnabled(shuffleEnabled), playlist(playlist), currentTrack(currentTrack),
+    originalTrack(currentTrack), shuffledIndices(shuffledIndices), shuffleIndex(shuffleIndex) {}
 
 void ToggleShuffleCommand::execute()
 {
@@ -414,13 +421,13 @@ void ToggleShuffleCommand::execute()
         }
         else
         {
-            shuffleIndex =0;
+            shuffleIndex = 0;
         }
     }
     else
     {
         shuffledIndices.clear();
-        shuffleIndex =0;
+        shuffleIndex = 0;
     }
 }
 

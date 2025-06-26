@@ -22,6 +22,8 @@
 #include <random>
 #include <QDebug>
 #include <QDir>
+#include <QFileSystemModel>
+#include <QStack>
 
 
 enum RepeatMode
@@ -43,7 +45,7 @@ public:
 class PlayCommand : public Command
 {
 public:
-    PlayCommand(QMediaPlayer* player, std::list<QUrl>::iterator track);
+    PlayCommand(QMediaPlayer* player , std::list<QUrl>::iterator track);
 
     void execute() override;
 
@@ -54,6 +56,7 @@ public:
 private:
     QMediaPlayer* player;
     std::list<QUrl>::iterator track;
+    std::list<QUrl>::iterator lasttrack;
 };
 
 
@@ -71,6 +74,7 @@ public:
 
 private:
     QMediaPlayer* player;
+
 };
 
 class AddTrackCommand : public Command
@@ -78,7 +82,10 @@ class AddTrackCommand : public Command
 public:
 
     AddTrackCommand(std::list<QUrl>& playlist, QStandardItemModel* model, const QUrl& track);
-    void execute() override ;
+    std::list<QUrl>::iterator executeWithResult();
+    void execute() override {
+        executeWithResult();
+    }
     void undo() override;
     QString description() const override;
 
@@ -110,52 +117,47 @@ private:
 
 class NextTrackCommand : public Command {
 public:
-    NextTrackCommand(QMediaPlayer* player, std::list<QUrl>&playlist, std::list<QUrl>::iterator& currentTrack,
-                     QStandardItemModel* model, RepeatMode repeatMode, bool shuffle,std::vector<int> shuffledIndices, int shuffleIndex);
+    NextTrackCommand(QMediaPlayer* player, std::list<QUrl>& playlist, std::list<QUrl>::iterator& currentTrack,
+                     QStandardItemModel* model, RepeatMode repeatMode, bool shuffle,
+                     std::vector<int>& shuffledIndices, int& shuffleIndex);
 
-    void execute() override ;
-
-    void undo() override ;
-
-    QString description() const override ;
-
+    void execute() override;
+    void undo() override;
+    QString description() const override;
 
 private:
     QMediaPlayer* player;
-    std::list<QUrl> playlist;
+    std::list<QUrl>& playlist;
     std::list<QUrl>::iterator& currentTrack;
     std::list<QUrl>::iterator originalTrack;
     QStandardItemModel* model;
     RepeatMode repeatMode;
     bool shuffle;
-    std::vector<int> shuffledIndices;
-    int shuffleIndex = 0;
-
-
+    std::vector<int>& shuffledIndices;
+    int& shuffleIndex;
 };
 
 
 class PreviousTrackCommand : public Command {
 public:
-    PreviousTrackCommand(QMediaPlayer* player, std::list<QUrl> playlist, std::list<QUrl>::iterator& currentTrack,
-                         QStandardItemModel* model, RepeatMode repeatMode, bool shuffle);
+    PreviousTrackCommand(QMediaPlayer* player, std::list<QUrl>& playlist, std::list<QUrl>::iterator& currentTrack,
+                         QStandardItemModel* model, RepeatMode repeatMode, bool shuffle,
+                         std::vector<int>& shuffledIndices, int& shuffleIndex);
 
-    void execute() override ;
-
+    void execute() override;
     void undo() override;
-
-    QString description() const override ;
+    QString description() const override;
 
 private:
     QMediaPlayer* player;
-    std::list<QUrl> playlist;
+    std::list<QUrl>& playlist;
     std::list<QUrl>::iterator& currentTrack;
     std::list<QUrl>::iterator originalTrack;
     QStandardItemModel* model;
     RepeatMode repeatMode;
     bool shuffle;
-    std::vector<int> shuffledIndices;
-    int shuffleIndex = 0;
+    std::vector<int>& shuffledIndices;
+    int& shuffleIndex;
 };
 
 
@@ -256,24 +258,22 @@ private:
 
 
 class ToggleShuffleCommand : public Command
-{
-public:
-    ToggleShuffleCommand(bool& shuffleEnabled, std::list<QUrl>& playlist, std::list<QUrl>::iterator& currentTrack,std::vector<int> shuffledIndices, int shuffleIndex);
-
-
-    void execute() override ;
-
-    void undo() override ;
-
-    QString description() const override ;
-
-private:
+ {
     bool& shuffleEnabled;
     std::list<QUrl>& playlist;
     std::list<QUrl>::iterator& currentTrack;
     std::list<QUrl>::iterator originalTrack;
-    std::vector<int> shuffledIndices;
-    int shuffleIndex = 0;
+    std::vector<int>& shuffledIndices;
+    int& shuffleIndex;
+
+public:
+    ToggleShuffleCommand(bool& shuffleEnabled, std::list<QUrl>& playlist,
+                         std::list<QUrl>::iterator& currentTrack,
+                         std::vector<int>& shuffledIndices, int& shuffleIndex);
+
+    void execute();
+    void undo();
+    QString description() const;
 };
 
 

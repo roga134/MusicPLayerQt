@@ -14,7 +14,7 @@
    <string>musicplayerpage</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QHBoxLayout" name="horizontalLayout_2">
+   <layout class="QHBoxLayout" name="horizontalLayout_6">
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
@@ -61,7 +61,58 @@
      </layout>
     </item>
     <item>
-     <widget class="QListView" name="playlist"/>
+     <layout class="QVBoxLayout" name="verticalLayout_5">
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <item>
+         <widget class="QPushButton" name="pushButton_back">
+          <property name="text">
+           <string/>
+          </property>
+          <property name="flat">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pushButton_home">
+          <property name="text">
+           <string/>
+          </property>
+          <property name="flat">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pushButton_forward">
+          <property name="text">
+           <string/>
+          </property>
+          <property name="flat">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QListView" name="playlist"/>
+      </item>
+     </layout>
     </item>
     <item>
      <widget class="QTabWidget" name="tabWidget">
@@ -151,7 +202,7 @@
             <item>
              <widget class="QSlider" name="time">
               <property name="orientation">
-               <enum>Qt::Orientation::Horizontal</enum>
+               <enum>Qt::Horizontal</enum>
               </property>
              </widget>
             </item>
@@ -179,16 +230,16 @@
                </widget>
               </item>
               <item>
-               <widget class="QLabel" name="volumlabel">
-                <property name="text">
-                 <string/>
+               <widget class="QSlider" name="volum">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
                 </property>
                </widget>
               </item>
               <item>
-               <widget class="QSlider" name="volum">
-                <property name="orientation">
-                 <enum>Qt::Orientation::Horizontal</enum>
+               <widget class="QLabel" name="volumlabel">
+                <property name="text">
+                 <string/>
                 </property>
                </widget>
               </item>
@@ -260,7 +311,7 @@
      <x>0</x>
      <y>0</y>
      <width>1002</width>
-     <height>26</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuMusic">
@@ -293,7 +344,6 @@
      <addaction name="actionDon_t_repeat"/>
      <addaction name="actionrepeat_trak"/>
     </widget>
-    <addaction name="actionAdd_Track"/>
     <addaction name="actionRemove_Track"/>
     <addaction name="separator"/>
     <addaction name="menuShuffel_mode"/>

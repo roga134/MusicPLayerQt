@@ -1,41 +1,93 @@
-// #include "musicplayerpage.h"
-// #include "ui_musicplayerpage.h"
+#include "musicplayerpage.h"
+#include "ui_musicplayerpage.h"
 
-// void musicplayerpage::update_playlistUI()
-// {
-//     playlistModel->removeRows(0, playlistModel->rowCount());
+void musicplayerpage::on_actionopen_file_triggered()
+{
+    QStringList files = QFileDialog::getOpenFileNames(this,tr("Select Music Files"),QDir::homePath(),tr("Audio Files (*.mp3 *.wav);;All Files (*)"));
 
-//     for (const auto& track : playlists[currentPlaylistName]) {
-//         QStandardItem* item = new QStandardItem(track.fileName());
-//         item->setData(track.toString(), Qt::UserRole);
-//         playlistModel->appendRow(item);
-//     }
-// }
+    if (files.isEmpty())
+    {
+        return;
+    }
 
-// void musicplayerpage::save_playlist_to_file()
-// {
-//     try
-//     {
-//         QFile file("playlists.dat");
-//         if (file.open(QIODevice::WriteOnly))
-//         {
-//             QDataStream out(&file);
-//             out << static_cast<int>(playlists.size());
+    for (const QString& filePath : files)
+    {
+        QFileInfo info(filePath);
 
-//             for (const auto& [name, tracks] : playlists)
-//             {
-//                 out << name;
-//                 out << static_cast<int>(tracks.size());
+        QUrl track = QUrl::fromLocalFile(filePath);
 
-//                 for (const auto& url : tracks)
-//                 {
-//                     out << url;
-//                 }
-//             }
-//         }
-//     } catch (...)
-//     {
-//         qWarning() << "Failed to save playlists";
-//     }
-// }
+        execute_Command(std::make_unique<AddTrackCommand>(playlists[currentPlaylistName], playlistModel, track));
 
+        ui->listSongs->setModel(playlistModel);
+    }
+}
+
+
+void musicplayerpage::on_pushButton_files_clicked()
+{
+    fileclied = true;
+    fileSystemModel = new QFileSystemModel(this);
+    fileSystemModel->setRootPath(QDir::rootPath());
+    ui->playlist->setModel(fileSystemModel);
+    ui->playlist->setRootIndex(fileSystemModel->index(QDir::homePath()));
+}
+
+void musicplayerpage::save_playlist_to_file(const QModelIndex &index)
+{
+    QString filePath = fileSystemModel->filePath(index);
+
+    if (fileSystemModel->isDir(index))
+    {
+        directoryHistory.push(ui->playlist->rootIndex());
+        forwardHistory.clear();
+        ui->playlist->setRootIndex(index);
+    }
+    else if (filePath.endsWith(".mp3", Qt::CaseInsensitive) || filePath.endsWith(".wav", Qt::CaseInsensitive))
+    {
+        QUrl track = QUrl::fromLocalFile(filePath);
+
+        execute_Command(std::make_unique<AddTrackCommand>(playlists[currentPlaylistName], playlistModel, track));
+
+        ui->listSongs->setModel(playlistModel);
+    }
+    else
+    {
+        QMessageBox::warning(this, "Warning", "This is not audio");
+    }
+}
+
+void musicplayerpage::on_pushButton_home_clicked()
+{
+    if(fileclied)
+    {
+        forwardHistory.clear();
+        directoryHistory.push(ui->playlist->rootIndex());
+
+        QModelIndex homeIndex = fileSystemModel->index(QDir::homePath());
+        ui->playlist->setRootIndex(homeIndex);
+    }
+    else
+    {
+        // یه چی خودت بزار که انگار باز نشده
+    }
+}
+
+void musicplayerpage::on_pushButton_forward_clicked()
+{
+    if (!forwardHistory.isEmpty())
+    {
+        directoryHistory.push(ui->playlist->rootIndex());
+        QModelIndex next = forwardHistory.pop();
+        ui->playlist->setRootIndex(next);
+    }
+}
+
+void musicplayerpage::on_pushButton_back_clicked()
+{
+    if (!directoryHistory.isEmpty())
+    {
+        forwardHistory.push(ui->playlist->rootIndex());
+        QModelIndex previous = directoryHistory.pop();
+        ui->playlist->setRootIndex(previous);
+    }
+}

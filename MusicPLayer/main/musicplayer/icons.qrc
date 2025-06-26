@@ -8,5 +8,8 @@
         <file>image/unmute.png</file>
         <file>image/shuffle.png</file>
         <file>image/shuffle-off.png</file>
+        <file>image/back.png</file>
+        <file>image/forward.png</file>
+        <file>image/home.png</file>
     </qresource>
 </RCC>
