@@ -85,14 +85,23 @@ private slots:
 
     void on_pushButton_creatPlaylist_clicked();
 
+
+    //void processBuffer();
+    //void updateVisualizer();
 private:
     Ui::musicplayerpage *ui;
     QMediaPlayer *player;
     QAudioOutput *audioOutput;
     QStandardItemModel *playlistModel ;
 
+    QVector<qint16> audioSamples;
+    QAudioDecoder* decoder = nullptr;
+    QTimer* timer = nullptr;
+    VisualizerWidget* visualizerWidget = nullptr;
+
+
     std::vector<int> shuffledIndices;
-    int shuffleIndex = 0;
+    int shuffleIndex = 0;    
 
     std::map<QString ,std::list<QUrl>> playlists;
     QMap<QString, QStandardItemModel*> playlistModels;
@@ -114,9 +123,6 @@ private:
     QStack<QModelIndex> directoryHistory;
     QStack<QModelIndex> forwardHistory;
     bool fileclied = false;
-
-
-
 
     void execute_Command(std::unique_ptr<Command> command);
     void play_current_track();
