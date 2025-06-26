@@ -29,6 +29,8 @@
 #include <QRandomGenerator>
 #include <QAudioDecoder>
 #include <QAudioBuffer>
+#include <QGraphicsView>
+#include <QGraphicsRectItem>
 #include "VisualizerWidget.h"
 
 

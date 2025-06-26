@@ -36,28 +36,29 @@ void musicplayerpage::on_pushButton_play_clicked()
     }
     else
     {
-        audioSamples.clear();
-
-        //->stop();
-
         if(currentTrack == playlists[currentPlaylistName].end())
         {
             qDebug() << "Invalid currentTrack! Cannot play.";
             return;
         }
 
-        //decoder->setSource(*currentTrack);
-        //decoder->start();
-
         if (!playlists[currentPlaylistName].empty())
         {
+            auto currentTrackUrl = *currentTrack;
+
             execute_Command(std::make_unique<PlayCommand>(player, currentTrack));
             lastTrack = currentTrack;
             ui->pushButton_play->setIcon(QIcon(":/icons/image/pause.png"));
+
+            decoder->stop();
+            decoder->setSource(currentTrackUrl);
+            connect(decoder, &QAudioDecoder::bufferReady, this, &musicplayerpage::processBuffer);
+            decoder->start();
+
+            timer->start(50);
         }
     }
 }
-
 
 void musicplayerpage::onItemDoubleClicked(const QModelIndex &index)
 {

@@ -189,6 +189,9 @@
          <widget class="QTreeView" name="listSongs"/>
         </item>
         <item>
+         <widget class="QGraphicsView" name="graphicsView"/>
+        </item>
+        <item>
          <layout class="QVBoxLayout" name="verticalLayout_3">
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_5">
@@ -202,7 +205,7 @@
             <item>
              <widget class="QSlider" name="time">
               <property name="orientation">
-               <enum>Qt::Orientation::Horizontal</enum>
+               <enum>Qt::Horizontal</enum>
               </property>
              </widget>
             </item>
@@ -232,7 +235,7 @@
               <item>
                <widget class="QSlider" name="volum">
                 <property name="orientation">
-                 <enum>Qt::Orientation::Horizontal</enum>
+                 <enum>Qt::Horizontal</enum>
                 </property>
                </widget>
               </item>
@@ -311,7 +314,7 @@
      <x>0</x>
      <y>0</y>
      <width>1002</width>
-     <height>26</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuMusic">

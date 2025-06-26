@@ -81,23 +81,30 @@ private slots:
     void on_actionDon_t_shuffel_triggered();
     void on_actionshuffel_all_triggered();
 
-    void on_pushButton_addPlaylist_clicked();
+    //void on_pushButton_addPlaylist_clicked();
 
-    void on_pushButton_creatPlaylist_clicked();
+    //void on_pushButton_creatPlaylist_clicked();
 
+    void processBuffer();
+    void updateVisualizer();
+    void setupVisualizerBars();
+    void showEvent(QShowEvent *event);
 
-    //void processBuffer();
-    //void updateVisualizer();
 private:
     Ui::musicplayerpage *ui;
     QMediaPlayer *player;
     QAudioOutput *audioOutput;
     QStandardItemModel *playlistModel ;
 
-    QVector<qint16> audioSamples;
-    QAudioDecoder* decoder = nullptr;
-    QTimer* timer = nullptr;
-    VisualizerWidget* visualizerWidget = nullptr;
+    QString audioFilePath;
+    QAudioDecoder *decoder;
+    QGraphicsScene *scene;
+    QTimer *timer;
+    QList<QGraphicsRectItem*> bars;
+    double currentAmplitude = 0;
+    double displayedAmplitude = 0;
+    QVector<double> currentBands;
+
 
 
     std::vector<int> shuffledIndices;

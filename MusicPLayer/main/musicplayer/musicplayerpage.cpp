@@ -19,20 +19,6 @@ musicplayerpage::musicplayerpage(QWidget *parent)
     ui->label_played->setText("00:00");
     ui->label_remaning->setText("00:00");
 
-    /*
-    timer = new QTimer(this);
-    decoder = new QAudioDecoder(this);
-    connect(timer, &QTimer::timeout, this, &musicplayerpage::updateVisualizer);
-    timer->start(30);
-    connect(decoder, &QAudioDecoder::bufferReady, this, &musicplayerpage::processBuffer);
-    visualizerWidget = new VisualizerWidget(this);
-    visualizerWidget->setFixedHeight(100);
-    visualizerWidget->setGeometry(0, 0,ui->widget->width(),ui->widget->height());
-    QVBoxLayout* layout = new QVBoxLayout(ui->widget);
-    layout->setContentsMargins(0, 0, 0, 0);
-    layout->addWidget(visualizerWidget);
-    visualizerWidget->show();*/
-
     player = new QMediaPlayer(this);
     audioOutput = new QAudioOutput(this);
     ui->volum->setValue(50);
@@ -58,6 +44,15 @@ musicplayerpage::musicplayerpage(QWidget *parent)
 
     repeatMode = RepeatMode::NoRepeat;
 
+    decoder = new QAudioDecoder(this);
+    timer = new QTimer(this);
+    scene = new QGraphicsScene(this);
+    ui->graphicsView->setScene(scene);
+
+    connect(decoder, &QAudioDecoder::bufferReady, this, &musicplayerpage::processBuffer);
+    connect(timer, &QTimer::timeout, this, &musicplayerpage::processBuffer);
+    timer->start(50);
+
     connect(player, &QMediaPlayer::positionChanged, this, &musicplayerpage::on_positionChanged);
     connect(player, &QMediaPlayer::durationChanged, this, &musicplayerpage::on_durationChanged);
     connect(player, &QMediaPlayer::mediaStatusChanged, this, &musicplayerpage::on_mediaStatusChanged);
@@ -65,6 +60,8 @@ musicplayerpage::musicplayerpage(QWidget *parent)
     connect(ui->listSongs, &QListView::doubleClicked, this, &musicplayerpage::onItemDoubleClicked);
     connect(ui->volum, &QSlider::valueChanged, this, &musicplayerpage::setvolum );
 
+    setupVisualizerBars();
+    ui->graphicsView->fitInView(scene->sceneRect(), Qt::KeepAspectRatio);
 }
 
 musicplayerpage::~musicplayerpage()
@@ -76,34 +73,31 @@ musicplayerpage::~musicplayerpage()
 }
 
 
-
+/*
 void musicplayerpage::on_pushButton_creatPlaylist_clicked()
 {
     bool ok;
     QString playlistName = QInputDialog::getText(this, tr("Create Playlist"),
                                                  tr("Playlist Name:"), QLineEdit::Normal, "", &ok);
-    if (ok && !playlistName.isEmpty()) {
-        if (playlists.find(playlistName) != playlists.end())
-        {
-            QTreeView *treeView = new QTreeView();
-            QStandardItemModel *model = new QStandardItemModel(treeView);
-            model->setHorizontalHeaderLabels({"Track", "Duration"});
-            treeView->setModel(model);
+    if (playlists.find(playlistName) == playlists.end())
+    {
+        QTreeView *treeView = new QTreeView();
+        QStandardItemModel *model = new QStandardItemModel(treeView);
+        model->setHorizontalHeaderLabels({"Track", "Duration"});
+        treeView->setModel(model);
 
-            int tabIndex = ui->tabWidget->addTab(treeView, playlistName);
-            ui->tabWidget->setCurrentIndex(tabIndex);
+        int tabIndex = ui->tabWidget->addTab(treeView, playlistName);
+        ui->tabWidget->setCurrentIndex(tabIndex);
 
-            playlists[playlistName] = std::list<QUrl>();
-            currentPlaylistName = playlistName;
+        playlists[playlistName] = std::list<QUrl>();
+        currentPlaylistName = playlistName;
 
-            execute_Command(std::make_unique<CreatePlaylistCommand>(playlists, model,playlistName));
-
-        }
-        else
-        {
-            QMessageBox::warning(this, tr("Error"),
-                                 tr("Playlist with this name already exists!"));
-        }
+        //execute_Command(std::make_unique<CreatePlaylistCommand>(playlists, playlistsModel, playlistName));
+    }
+    else
+    {
+        QMessageBox::warning(this, tr("Error"),
+                             tr("Playlist with this name already exists!"));
     }
 
-}
+}*/

@@ -48,6 +48,7 @@ void musicplayerpage::save_playlist_to_file(const QModelIndex &index)
         execute_Command(std::make_unique<AddTrackCommand>(playlists[currentPlaylistName], playlistModel, track));
 
         ui->listSongs->setModel(playlistModel);
+        decoder->setSource(track);
     }
     else
     {
