@@ -51,6 +51,7 @@ musicplayerpage::musicplayerpage(QWidget *parent)
     connect(ui->playlist, &QTreeView::doubleClicked, this, &musicplayerpage::save_playlist_to_file);
     connect(ui->listSongs, &QListView::doubleClicked, this, &musicplayerpage::onItemDoubleClicked);
     connect(ui->volum, &QSlider::valueChanged, this, &musicplayerpage::setvolum );
+
 }
 
 musicplayerpage::~musicplayerpage()
@@ -59,4 +60,37 @@ musicplayerpage::~musicplayerpage()
     delete audioOutput;
     delete playlistModel;
     delete ui;
+}
+
+
+
+void musicplayerpage::on_pushButton_creatPlaylist_clicked()
+{
+    bool ok;
+    QString playlistName = QInputDialog::getText(this, tr("Create Playlist"),
+                                                 tr("Playlist Name:"), QLineEdit::Normal, "", &ok);
+    if (ok && !playlistName.isEmpty()) {
+        if (playlists.find(playlistName) != playlists.end())
+        {
+            QTreeView *treeView = new QTreeView();
+            QStandardItemModel *model = new QStandardItemModel(treeView);
+            model->setHorizontalHeaderLabels({"Track", "Duration"});
+            treeView->setModel(model);
+
+            int tabIndex = ui->tabWidget->addTab(treeView, playlistName);
+            ui->tabWidget->setCurrentIndex(tabIndex);
+
+            playlists[playlistName] = std::list<QUrl>();
+            currentPlaylistName = playlistName;
+
+            execute_Command(std::make_unique<CreatePlaylistCommand>(playlists, model,playlistName));
+
+        }
+        else
+        {
+            QMessageBox::warning(this, tr("Error"),
+                                 tr("Playlist with this name already exists!"));
+        }
+    }
+
 }

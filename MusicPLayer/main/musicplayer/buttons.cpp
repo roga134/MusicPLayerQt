@@ -206,3 +206,4 @@ void musicplayerpage::setvolum(int value)
 
      audioOutput->setVolume(value / 100.0f);
 }
+

@@ -8,7 +8,6 @@ QT_BEGIN_NAMESPACE
 namespace Ui { class musicplayerpage; }
 QT_END_NAMESPACE
 
-
 class musicplayerpage : public QMainWindow
 {
     Q_OBJECT
@@ -82,6 +81,10 @@ private slots:
     void on_actionDon_t_shuffel_triggered();
     void on_actionshuffel_all_triggered();
 
+    void on_pushButton_addPlaylist_clicked();
+
+    void on_pushButton_creatPlaylist_clicked();
+
 private:
     Ui::musicplayerpage *ui;
     QMediaPlayer *player;
@@ -92,6 +95,7 @@ private:
     int shuffleIndex = 0;
 
     std::map<QString ,std::list<QUrl>> playlists;
+    QMap<QString, QStandardItemModel*> playlistModels;
     std::list<QUrl>::iterator currentTrack ;
     std::list<QUrl>::iterator lastTrack;
     std::queue<QUrl> temporary;
@@ -115,15 +119,10 @@ private:
 
 
     void execute_Command(std::unique_ptr<Command> command);
-//     void update_undo_and_redo_Button();
-//     void update_playlistUI();
     void play_current_track();
-//     void shuffle_Playlist();
-//     QString formatTime(qint64 milliseconds);
-//     std::list<QUrl>::iterator find_in_playlist(const QUrl& url);
-  //  void save_playlist_to_file();
-   // void load_playlists_from_file();
     QString formatTime(qint64 milliseconds);
+
+
 
 };
 
