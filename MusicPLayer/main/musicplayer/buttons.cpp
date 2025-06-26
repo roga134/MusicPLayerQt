@@ -113,6 +113,8 @@ void musicplayerpage::on_actionRemove_Track_triggered()
         if (playlists[currentPlaylistName].empty() || currentTrack == playlists[currentPlaylistName].end())
             return;
 
+        auto nextTrack = std::next(currentTrack);
+
         int row = std::distance(playlists[currentPlaylistName].begin(), currentTrack);
         execute_Command(std::make_unique<RemoveTrackCommand>(
             playlists[currentPlaylistName],
@@ -125,9 +127,13 @@ void musicplayerpage::on_actionRemove_Track_triggered()
         {
             currentTrack = playlists[currentPlaylistName].end();
         }
+        else if(nextTrack != playlists[currentPlaylistName].end())
+        {
+            currentTrack = nextTrack;
+        }
         else
         {
-            currentTrack = playlists[currentPlaylistName].begin();
+            currentTrack = std::prev(playlists[currentPlaylistName].end());
         }
 
         execute_Command(std::make_unique<PauseCommand>(player));
@@ -135,7 +141,15 @@ void musicplayerpage::on_actionRemove_Track_triggered()
         ui->label_played->setText("00:00");
         ui->label_remaning->setText("00:00");
         ui->time->setValue(0);
-        currentTrack = playlists[currentPlaylistName].begin();////////////////////////اینجا باگ داره که اون اهنگی که حذف میشه بازم دکمه پلی رو بزنه اجرا میشه
+
+        if(currentTrack != playlists[currentPlaylistName].end())
+        {
+            player->setSource(*currentTrack);
+        }
+        else
+        {
+            player->setSource(QString());
+        }
 }
 
 void musicplayerpage::on_pushButton_mute_clicked()
