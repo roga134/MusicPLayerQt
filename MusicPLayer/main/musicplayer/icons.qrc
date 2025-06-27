@@ -11,5 +11,8 @@
         <file>image/back.png</file>
         <file>image/forward.png</file>
         <file>image/home.png</file>
+        <file>image/add_playlist.png</file>
+        <file>image/load_playlist.png</file>
+        <file>image/save_playlist.png</file>
     </qresource>
 </RCC>

@@ -33,7 +33,7 @@ void musicplayerpage::on_durationChanged(qint64 duration)
     // Update duration in playlist
     if (currentTrack != playlists[currentPlaylistName].end()) {
         int row = std::distance(playlists[currentPlaylistName].begin(), currentTrack);
-        QStandardItem* durationItem = playlistModel->item(row, 1);
+        QStandardItem* durationItem = playlistModels[currentPlaylistName]->item(row, 1);
         if (durationItem) {
             durationItem->setText(formatTime(duration));
         }

@@ -16,9 +16,10 @@ void musicplayerpage::on_actionopen_file_triggered()
 
         QUrl track = QUrl::fromLocalFile(filePath);
 
-        execute_Command(std::make_unique<AddTrackCommand>(playlists[currentPlaylistName], playlistModel, track));
+        execute_Command(std::make_unique<AddTrackCommand>(playlists[mainkey[indexPlaylist]], playlistModels, track , mainkey[indexPlaylist]));
 
-        ui->listSongs->setModel(playlistModel);
+
+        listsong[indexPlaylist]->setModel(playlistModels[mainkey[indexPlaylist]]);
     }
 }
 
@@ -45,9 +46,13 @@ void musicplayerpage::save_playlist_to_file(const QModelIndex &index)
     {
         QUrl track = QUrl::fromLocalFile(filePath);
 
-        execute_Command(std::make_unique<AddTrackCommand>(playlists[currentPlaylistName], playlistModel, track));
+        execute_Command(std::make_unique<AddTrackCommand>(playlists[mainkey[indexPlaylist]], playlistModels, track, mainkey[indexPlaylist]));
+        playlistQueues[mainkey[indexPlaylist]].initialize(playlists[mainkey[indexPlaylist]]);
 
-        ui->listSongs->setModel(playlistModel);
+        updateQueueTab();
+
+        listsong[indexPlaylist]->setModel(playlistModels[mainkey[indexPlaylist]]);
+        //listsong[]->setModel(playlistModels[mainkey[indexPlaylist]]);
         decoder->setSource(track);
     }
     else

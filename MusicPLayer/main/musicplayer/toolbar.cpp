@@ -34,3 +34,18 @@ void musicplayerpage::on_actionshuffel_all_triggered()
 
     ui->pushButton_shufle->setIcon(QIcon(":/icons/image/shuffle.png"));
 }
+
+void musicplayerpage::on_actionadd_playlist_triggered()
+{
+    on_pushButton_creatPlaylist_clicked();
+}
+
+void musicplayerpage::on_actionsave_playlist_triggered()
+{
+    on_pushButton_savePlaylist_clicked();
+}
+
+void musicplayerpage::on_actionload_playlist_triggered()
+{
+    on_pushButton_loadPlaylist_clicked();
+}

@@ -67,6 +67,7 @@ private slots:
     void on_actionopen_file_triggered();
 
     void onItemDoubleClicked(const QModelIndex &index);
+    void handleDoubleClickFromListView(QListView *listView, const QModelIndex &index);
 
     void setvolum(int value);
 
@@ -81,20 +82,31 @@ private slots:
     void on_actionDon_t_shuffel_triggered();
     void on_actionshuffel_all_triggered();
 
-    //void on_pushButton_addPlaylist_clicked();
-
-    //void on_pushButton_creatPlaylist_clicked();
+    void on_actionadd_playlist_triggered();
+    void on_actionsave_playlist_triggered();
+    void on_actionload_playlist_triggered();
 
     void processBuffer();
     void updateVisualizer();
     void setupVisualizerBars();
     void showEvent(QShowEvent *event);
 
+    void on_pushButton_creatPlaylist_clicked();
+    void onTabChanged(int index);
+
+    void on_pushButton_savePlaylist_clicked();
+
+    void on_pushButton_loadPlaylist_clicked();
+
+    void updateQueueTab();
+    void createQueueTab();
+    void renamePlaylistTab(int index) ;
+
 private:
     Ui::musicplayerpage *ui;
     QMediaPlayer *player;
     QAudioOutput *audioOutput;
-    QStandardItemModel *playlistModel ;
+    std::vector<QStandardItemModel*> listModels;
 
     QString audioFilePath;
     QAudioDecoder *decoder;
@@ -135,8 +147,14 @@ private:
     void play_current_track();
     QString formatTime(qint64 milliseconds);
 
-
-
+    std::vector<QListView*> listsong;
+    QListView* queueListView;
+    QStandardItemModel* queueModel;
+    int queueTabIndex;
+    int countPlaylist = 0;
+    int indexPlaylist = 0;
+    QMap<int, QString> mainkey;
+    QMap<QString, MusicPlayerQueue> playlistQueues;
 };
 
 #endif

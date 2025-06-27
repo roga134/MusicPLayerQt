@@ -15,11 +15,8 @@ void musicplayerpage::on_actionAdd_Track_triggered()
         qDebug() << "File dose not exist" << trackUrl.toLocalFile();
         return ;
     }
-    execute_Command(std::make_unique<AddTrackCommand>(
-        playlists[currentPlaylistName],
-        playlistModel,
-        trackUrl
-        ));
+    execute_Command(std::make_unique<AddTrackCommand>(playlists[currentPlaylistName], playlistModels, trackUrl , mainkey[indexPlaylist]));
+
 
     if (currentTrack == playlists[currentPlaylistName].end())
     {
@@ -80,6 +77,41 @@ void musicplayerpage::onItemDoubleClicked(const QModelIndex &index)
     ui->pushButton_play->setIcon(QIcon(":/icons/image/pause.png"));
 }
 
+void musicplayerpage::handleDoubleClickFromListView(QListView *listView, const QModelIndex &index)
+{
+    QString matchedPlaylistName;
+    for (auto it = playlistModels.begin(); it != playlistModels.end(); ++it)
+    {
+        if (listView->model() == it.value())
+        {
+            matchedPlaylistName = it.key();
+            break;
+        }
+    }
+
+    if (matchedPlaylistName.isEmpty()) {
+        qDebug() << "Playlist not found for this listView.";
+        return;
+    }
+
+    auto &playlist = playlists[matchedPlaylistName];
+    int row = index.row();
+
+    if (row < 0 || row >= static_cast<int>(playlist.size()))
+    {
+        qDebug() << "Invalid index in playlist.";
+        return;
+    }
+
+    currentTrack = playlist.begin();
+    std::advance(currentTrack, row);
+    currentPlaylistName = matchedPlaylistName;
+
+    execute_Command(std::make_unique<PlayCommand>(player, currentTrack));
+    lastTrack = currentTrack;
+    ui->pushButton_play->setIcon(QIcon(":/icons/image/pause.png"));
+}
+
 
 void musicplayerpage::execute_Command(std::unique_ptr<Command> command)
 {
@@ -92,17 +124,15 @@ void musicplayerpage::on_pushButton_prev_clicked()
         player,
         playlists[currentPlaylistName],
         currentTrack,
-        playlistModel,
+        playlistModels,
         repeatMode,
         shuffleMode,
-        shuffledIndices,
-        shuffleIndex
+        playlistQueues[currentPlaylistName]
         ));
 
     int row = std::distance(playlists[currentPlaylistName].begin(), currentTrack);
-    ui->listSongs->setCurrentIndex(playlistModel->index(row, 0));
+    listsong[indexPlaylist]->setCurrentIndex(playlistModels[currentPlaylistName]->index(row, 0));
 }
-
 
 
 void musicplayerpage::on_pushButton_next_clicked()
@@ -113,63 +143,96 @@ void musicplayerpage::on_pushButton_next_clicked()
     }
 
     execute_Command(std::make_unique<NextTrackCommand>(
-                        player,
-                        playlists[currentPlaylistName],
-                        currentTrack,
-                        playlistModel,
-                        repeatMode,
-                        shuffleMode,
-                        shuffledIndices,
-                        shuffleIndex
-    ));
+        player,
+        playlists[currentPlaylistName],
+        currentTrack,
+        playlistModels,
+        repeatMode,
+        shuffleMode,
+        playlistQueues[currentPlaylistName]
+        ));
 
     int row = std::distance(playlists[currentPlaylistName].begin(), currentTrack);
-    ui->listSongs->setCurrentIndex(playlistModel->index(row, 0));
+    listsong[indexPlaylist]->setCurrentIndex(playlistModels[currentPlaylistName]->index(row, 0));
 }
 
 void musicplayerpage::on_actionRemove_Track_triggered()
 {
-        if (playlists[currentPlaylistName].empty() || currentTrack == playlists[currentPlaylistName].end())
-            return;
+    QListView *listView = new QListView(this);
+    listView = listsong[indexPlaylist];
 
-        auto nextTrack = std::next(currentTrack);
+    if (!listView)
+        return;
 
-        int row = std::distance(playlists[currentPlaylistName].begin(), currentTrack);
-        execute_Command(std::make_unique<RemoveTrackCommand>(
-            playlists[currentPlaylistName],
-            playlistModel,
-            currentTrack
-            ));
+    QModelIndex index = listView->currentIndex();
+    if (!index.isValid())
+        return;
 
-
-        if (playlists[currentPlaylistName].empty())
+    QString matchedPlaylistName;
+    for (const auto& key : playlistModels.keys())
+    {
+        if (playlistModels[key] == listView->model())
         {
-            currentTrack = playlists[currentPlaylistName].end();
+            matchedPlaylistName = key;
+            break;
         }
-        else if(nextTrack != playlists[currentPlaylistName].end())
+    }
+
+    if (matchedPlaylistName.isEmpty())
+    {
+        qDebug() << "Playlist not found for the given QListView";
+        return;
+    }
+
+    auto& playlist = playlists[matchedPlaylistName];
+    if (playlist.empty())
+        return;
+
+    int row = index.row();
+    if (row < 0 || row >= static_cast<int>(playlist.size()))
+        return;
+
+    auto it = playlist.begin();
+    std::advance(it, row);
+
+    execute_Command(std::make_unique<RemoveTrackCommand>(
+        playlist,
+        playlistModels,
+        it,
+        mainkey[indexPlaylist]
+        ));
+
+    if (playlist.empty())
+    {
+        currentTrack = playlist.end();
+        player->stop();
+        player->setSource(QString());
+        listView->clearSelection();
+    }
+    else
+    {
+        if (row < static_cast<int>(playlist.size()))
         {
-            currentTrack = nextTrack;
+            currentTrack = playlist.begin();
+            std::advance(currentTrack, row);
         }
         else
         {
-            currentTrack = std::prev(playlists[currentPlaylistName].end());
+            currentTrack = std::prev(playlist.end());
         }
+        player->setSource(*currentTrack);
+    }
 
-        execute_Command(std::make_unique<PauseCommand>(player));
-        ui->pushButton_play->setIcon(QIcon(":/icons/image/play-buttton.png"));
-        ui->label_played->setText("00:00");
-        ui->label_remaning->setText("00:00");
-        ui->time->setValue(0);
+    execute_Command(std::make_unique<PauseCommand>(player));
+    ui->pushButton_play->setIcon(QIcon(":/icons/image/play-buttton.png"));
+    ui->label_played->setText("00:00");
+    ui->label_remaning->setText("00:00");
+    ui->time->setValue(0);
 
-        if(currentTrack != playlists[currentPlaylistName].end())
-        {
-            player->setSource(*currentTrack);
-        }
-        else
-        {
-            player->setSource(QString());
-        }
+    listView->setModel(playlistModels[matchedPlaylistName]);
 }
+
+
 
 void musicplayerpage::on_pushButton_mute_clicked()
 {

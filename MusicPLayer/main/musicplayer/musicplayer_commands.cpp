@@ -1,4 +1,5 @@
 #include "musicplayer_commands.h"
+#include "musicplayerqueue.h"
 
 // PlayCommand class
 PlayCommand::PlayCommand(QMediaPlayer* player, std::list<QUrl>::iterator track)
@@ -57,15 +58,25 @@ QString PauseCommand::description() const
 }
 
 // AddTrackCommand class
-AddTrackCommand::AddTrackCommand(std::list<QUrl>& playlist, QStandardItemModel* model, const QUrl& track)
-    : playlist(playlist), model(model), track(track) {}
+AddTrackCommand::AddTrackCommand(std::list<QUrl>& playlist, QMap<QString, QStandardItemModel*>& model, const QUrl& track, QString key)
+    : playlist(playlist), model(model), track(track) , key(key) {}
 
 std::list<QUrl>::iterator AddTrackCommand::executeWithResult()
 {
     playlist.push_back(track);
     QStandardItem* item = new QStandardItem(track.fileName());
     item->setData(track.toString(), Qt::UserRole);
-    model->appendRow(item);
+
+    if (!model.contains(key)) {
+        qWarning() << "Key not found:" << key;
+        return std::prev(playlist.end());
+    }
+
+    if (model[key] == nullptr) {
+        qWarning() << "Model pointer is nullptr for key:" << key;
+        return std::prev(playlist.end());
+    }
+    model[key]->appendRow(item);
     qDebug() << "Track added:" << track;
     return std::prev(playlist.end());
 }
@@ -74,7 +85,7 @@ void AddTrackCommand::undo()
 {
     if (!playlist.empty()) {
         playlist.pop_back();
-        model->removeRow(model->rowCount() - 1);
+        //model->removeRow(model->rowCount() - 1);
     }
 }
 
@@ -85,15 +96,28 @@ QString AddTrackCommand::description() const
 
 
 // RemoveTrack class
-RemoveTrackCommand::RemoveTrackCommand(std::list<QUrl>& playlist, QStandardItemModel* model, std::list<QUrl>::iterator track)
-    : playlist(playlist), model(model), track(track), pos(std::distance(playlist.begin(), track)) {}
+RemoveTrackCommand::RemoveTrackCommand(std::list<QUrl>& playlist, QMap<QString, QStandardItemModel*>& model, std::list<QUrl>::iterator track , QString key)
+    : playlist(playlist), model(model), track(track), pos(std::distance(playlist.begin(), track)) , key(key){}
+
 
 void RemoveTrackCommand::execute()
 {
     if (track != playlist.end())
     {
         playlist.erase(track);
-        model->removeRow(pos);
+
+        if (model.contains(key))
+        {
+            QStandardItemModel* playlistModel = model[key];
+            if (playlistModel && pos >= 0 && pos < playlistModel->rowCount())
+            {
+                playlistModel->removeRow(pos);
+            }
+        }
+        else
+        {
+            qWarning() << "Playlist key not found:" << key;
+        }
     }
 }
 
@@ -105,7 +129,7 @@ void RemoveTrackCommand::undo()
 
     QStandardItem* item = new QStandardItem(track->fileName());
     item->setData(track->toString(), Qt::UserRole);
-    model->insertRow(pos, item);
+    //model->insertRow(pos, item);
 
 }
 
@@ -117,58 +141,72 @@ QString RemoveTrackCommand::description() const
 
 //NextTrackcommand class
 NextTrackCommand::NextTrackCommand(QMediaPlayer* player, std::list<QUrl>& playlist, std::list<QUrl>::iterator& currentTrack,
-                                   QStandardItemModel* model, RepeatMode repeatMode, bool shuffle,
-                                   std::vector<int>& shuffledIndices, int& shuffleIndex)
+                                   QMap<QString, QStandardItemModel*> model, RepeatMode repeatMode, bool shuffle,
+                                   MusicPlayerQueue& queue)
     : player(player), playlist(playlist), currentTrack(currentTrack), model(model),
-    repeatMode(repeatMode), shuffle(shuffle),
-    shuffledIndices(shuffledIndices), shuffleIndex(shuffleIndex) {}
+    repeatMode(repeatMode), shuffle(shuffle), queue(queue), originalTrack(currentTrack) {}
 
 void NextTrackCommand::execute()
 {
     if (playlist.empty()) return;
 
-    // Save original state for undo
     originalTrack = currentTrack;
 
     if (shuffle)
     {
-        if (shuffledIndices.empty())
-        {
-            shuffledIndices.resize(playlist.size());
-            std::iota(shuffledIndices.begin(), shuffledIndices.end(), 0);
-            std::shuffle(shuffledIndices.begin(), shuffledIndices.end(), std::mt19937{std::random_device{}()});
-            shuffleIndex = 0;
+        int currentPos = std::distance(playlist.begin(), currentTrack);
+
+        if (queue.empty()) {
+            queue.initialize(playlist);
         }
-        else
+
+        bool moved = queue.moveToNext(currentPos);
+
+        if (!moved)
         {
-            shuffleIndex = (shuffleIndex + 1) % shuffledIndices.size();
+            if (repeatMode == RepeatMode::RepeatAll)
+            {
+                queue.initialize(playlist);
+                moved = queue.moveToNext(currentPos);
+                if (!moved)
+                    return;
+            }
+            else
+            {
+                return;
+            }
         }
-        int nextIndex = shuffledIndices[shuffleIndex];
+
         auto it = playlist.begin();
-        std::advance(it, nextIndex);
+        std::advance(it, currentPos);
         currentTrack = it;
     }
     else
     {
-        currentTrack ++;
+        ++currentTrack;
 
-        if (currentTrack == playlist.end()) {
-            if (repeatMode == RepeatMode::RepeatAll) {
+        if (currentTrack == playlist.end())
+        {
+            if (repeatMode == RepeatMode::RepeatAll)
+            {
                 currentTrack = playlist.begin();
-            } else {
-                currentTrack = originalTrack;
+            }
+            else
+            {
+                --currentTrack;
                 return;
             }
         }
     }
 
-    if (player)
+    if (player && currentTrack != playlist.end())
     {
         player->stop();
         player->setSource(*currentTrack);
         player->play();
     }
 }
+
 
 void NextTrackCommand::undo()
 {
@@ -189,25 +227,44 @@ QString NextTrackCommand::description() const
 // PreviousCommand class
 
 PreviousTrackCommand::PreviousTrackCommand(QMediaPlayer* player, std::list<QUrl>& playlist, std::list<QUrl>::iterator& currentTrack,
-                                           QStandardItemModel* model, RepeatMode repeatMode, bool shuffle,
-                                           std::vector<int>& shuffledIndices, int& shuffleIndex)
+                                           QMap<QString, QStandardItemModel*> model, RepeatMode repeatMode, bool shuffle,
+                                           MusicPlayerQueue& queue)
     : player(player), playlist(playlist), currentTrack(currentTrack), model(model),
-    repeatMode(repeatMode), shuffle(shuffle),
-    shuffledIndices(shuffledIndices), shuffleIndex(shuffleIndex),
-    originalTrack(currentTrack) {}
+    repeatMode(repeatMode), shuffle(shuffle), queue(queue), originalTrack(currentTrack) {}
 
 void PreviousTrackCommand::execute()
 {
     if (playlist.empty())
-    {
         return;
-    }
 
-    if (shuffle && !shuffledIndices.empty())
+    originalTrack = currentTrack;
+
+    int currentPos = std::distance(playlist.begin(), currentTrack);
+
+    if (shuffle)
     {
-        shuffleIndex = (shuffleIndex - 1 + shuffledIndices.size()) % shuffledIndices.size();
+        if (queue.historyEmpty())
+            queue.initialize(playlist);
+
+        bool moved = queue.moveToPrevious(currentPos);
+
+        if (!moved)
+        {
+            if (repeatMode == RepeatMode::RepeatAll)
+            {
+                queue.initialize(playlist);
+                moved = queue.moveToPrevious(currentPos);
+                if (!moved)
+                    return;
+            }
+            else
+            {
+                return;
+            }
+        }
+
         auto it = playlist.begin();
-        std::advance(it, shuffledIndices[shuffleIndex]);
+        std::advance(it, currentPos);
         currentTrack = it;
     }
     else
@@ -216,7 +273,8 @@ void PreviousTrackCommand::execute()
         {
             if (repeatMode == RepeatMode::RepeatAll)
             {
-                currentTrack = --playlist.end();
+                currentTrack = playlist.end();
+                --currentTrack;
             }
             else
             {
@@ -231,14 +289,12 @@ void PreviousTrackCommand::execute()
 
     if (player && currentTrack != playlist.end())
     {
+        player->stop();
         player->setSource(*currentTrack);
         player->play();
-
-        // int row = std::distance(playlist.begin(), currentTrack);
-        // QModelIndex index = model->index(row, 0);
-        // emit model->dataChanged(index, index, {Qt::BackgroundRole});
     }
 }
+
 
 void PreviousTrackCommand::undo()
 {
