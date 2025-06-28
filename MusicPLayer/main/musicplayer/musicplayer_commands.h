@@ -39,7 +39,6 @@
 #include <QMediaMetaData>
 #include <QVariant>
 #include <QPixmap>
-#include "musicplayerqueue.h"
 
 enum RepeatMode
 {
@@ -136,8 +135,7 @@ private:
 class NextTrackCommand : public Command {
 public:
     NextTrackCommand(QMediaPlayer* player, std::list<QUrl>& playlist, std::list<QUrl>::iterator& currentTrack,
-                     QMap<QString, QStandardItemModel*> model, RepeatMode repeatMode, bool shuffle,
-                     MusicPlayerQueue& queue);
+                     QMap<QString, QStandardItemModel*> model, RepeatMode repeatMode, bool shuffle);
 
     void execute() override;
     void undo() override;
@@ -151,15 +149,13 @@ private:
     QMap<QString, QStandardItemModel*> model;
     RepeatMode repeatMode;
     bool shuffle;
-    MusicPlayerQueue& queue;
 };
 
 
 class PreviousTrackCommand : public Command {
 public:
     PreviousTrackCommand(QMediaPlayer* player, std::list<QUrl>& playlist, std::list<QUrl>::iterator& currentTrack,
-                         QMap<QString, QStandardItemModel*> model, RepeatMode repeatMode, bool shuffle,
-                         MusicPlayerQueue& queue);
+                         QMap<QString, QStandardItemModel*> model, RepeatMode repeatMode, bool shuffle);
 
     void execute() override;
     void undo() override;
@@ -173,7 +169,6 @@ private:
     QMap<QString, QStandardItemModel*> model;
     RepeatMode repeatMode;
     bool shuffle;
-    MusicPlayerQueue& queue;
 };
 
 

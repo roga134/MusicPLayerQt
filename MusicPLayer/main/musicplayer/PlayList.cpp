@@ -20,10 +20,9 @@ void musicplayerpage::on_pushButton_creatPlaylist_clicked()
 
     connect(listView, &QListView::doubleClicked, this, &musicplayerpage::onItemDoubleClicked);
 
-    QString key = QString("PlayList %1").arg(countPlaylist);
+    QString key = QString("PlayList %1").arg(countPlaylist+1);
     playlistModels[key] = newModel;
     playlists[key] = std::list<QUrl>();
-    playlistQueues[key] = MusicPlayerQueue();
 
     QVBoxLayout *layout = new QVBoxLayout(newTab);
     layout->addWidget(listView);
@@ -39,43 +38,6 @@ void musicplayerpage::on_pushButton_creatPlaylist_clicked()
 
     currentPlaylistName = key;
     currentTrack = playlists[key].end();
-}
-
-void musicplayerpage::createQueueTab()
-{
-    QWidget *queueTab = new QWidget();
-
-    queueListView = new QListView(queueTab);
-    queueModel = new QStandardItemModel(this);
-
-    queueListView->setModel(queueModel);
-
-    QVBoxLayout *layout = new QVBoxLayout(queueTab);
-    layout->addWidget(queueListView);
-    queueTab->setLayout(layout);
-
-    queueTabIndex = ui->tabWidget->addTab(queueTab, "Queue");
-}
-
-void musicplayerpage::updateQueueTab()
-{
-    if (temporary.empty())
-        return;
-
-    queueModel->clear();
-
-    std::queue<QUrl> tempQueue = temporary;
-
-    while (!tempQueue.empty())
-    {
-        QUrl trackUrl = tempQueue.front();
-        tempQueue.pop();
-
-        QStandardItem* item = new QStandardItem(trackUrl.fileName());
-        item->setData(trackUrl.toString(), Qt::UserRole);
-
-        queueModel->appendRow(item);
-    }
 }
 
 void musicplayerpage::onTabChanged(int index)

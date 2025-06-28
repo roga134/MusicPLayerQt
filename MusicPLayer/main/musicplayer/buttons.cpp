@@ -126,8 +126,7 @@ void musicplayerpage::on_pushButton_prev_clicked()
         currentTrack,
         playlistModels,
         repeatMode,
-        shuffleMode,
-        playlistQueues[currentPlaylistName]
+        shuffleMode
         ));
 
     int row = std::distance(playlists[currentPlaylistName].begin(), currentTrack);
@@ -148,8 +147,7 @@ void musicplayerpage::on_pushButton_next_clicked()
         currentTrack,
         playlistModels,
         repeatMode,
-        shuffleMode,
-        playlistQueues[currentPlaylistName]
+        shuffleMode
         ));
 
     int row = std::distance(playlists[currentPlaylistName].begin(), currentTrack);
@@ -328,13 +326,3 @@ void musicplayerpage::loadCoverOfMusic()
 
 
 }
-
-
-
-
-
-
-
-
-
-

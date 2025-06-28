@@ -22,15 +22,13 @@ SOURCES += \
     main.cpp \
     musicplayer_commands.cpp \
     musicplayerpage.cpp \
-    musicplayerqueue.cpp \
     sound.cpp \
     time.cpp \
     toolbar.cpp
 
 HEADERS += \
     musicplayer_commands.h \
-    musicplayerpage.h \
-    musicplayerqueue.h
+    musicplayerpage.h
 
 FORMS += \
     musicplayerpage.ui

@@ -1,5 +1,4 @@
 #include "musicplayer_commands.h"
-#include "musicplayerqueue.h"
 
 // PlayCommand class
 PlayCommand::PlayCommand(QMediaPlayer* player, std::list<QUrl>::iterator track)
@@ -141,10 +140,9 @@ QString RemoveTrackCommand::description() const
 
 //NextTrackcommand class
 NextTrackCommand::NextTrackCommand(QMediaPlayer* player, std::list<QUrl>& playlist, std::list<QUrl>::iterator& currentTrack,
-                                   QMap<QString, QStandardItemModel*> model, RepeatMode repeatMode, bool shuffle,
-                                   MusicPlayerQueue& queue)
+                                   QMap<QString, QStandardItemModel*> model, RepeatMode repeatMode, bool shuffle)
     : player(player), playlist(playlist), currentTrack(currentTrack), model(model),
-    repeatMode(repeatMode), shuffle(shuffle), queue(queue), originalTrack(currentTrack) {}
+    repeatMode(repeatMode), shuffle(shuffle), originalTrack(currentTrack) {}
 
 void NextTrackCommand::execute()
 {
@@ -154,32 +152,19 @@ void NextTrackCommand::execute()
 
     if (shuffle)
     {
-        int currentPos = std::distance(playlist.begin(), currentTrack);
-
-        if (queue.empty()) {
-            queue.initialize(playlist);
-        }
-
-        bool moved = queue.moveToNext(currentPos);
-
-        if (!moved)
-        {
-            if (repeatMode == RepeatMode::RepeatAll)
-            {
-                queue.initialize(playlist);
-                moved = queue.moveToNext(currentPos);
-                if (!moved)
-                    return;
+        int playlistSize = static_cast<int>(playlist.size());
+        if (playlistSize == 1) {
+            currentTrack = playlist.begin();
+        } else {
+            int newIndex = rand() % playlistSize;
+            int currentIndex = std::distance(playlist.begin(), currentTrack);
+            while (newIndex == currentIndex) {
+                newIndex = rand() % playlistSize;
             }
-            else
-            {
-                return;
-            }
+            auto it = playlist.begin();
+            std::advance(it, newIndex);
+            currentTrack = it;
         }
-
-        auto it = playlist.begin();
-        std::advance(it, currentPos);
-        currentTrack = it;
     }
     else
     {
@@ -227,10 +212,9 @@ QString NextTrackCommand::description() const
 // PreviousCommand class
 
 PreviousTrackCommand::PreviousTrackCommand(QMediaPlayer* player, std::list<QUrl>& playlist, std::list<QUrl>::iterator& currentTrack,
-                                           QMap<QString, QStandardItemModel*> model, RepeatMode repeatMode, bool shuffle,
-                                           MusicPlayerQueue& queue)
+                                           QMap<QString, QStandardItemModel*> model, RepeatMode repeatMode, bool shuffle)
     : player(player), playlist(playlist), currentTrack(currentTrack), model(model),
-    repeatMode(repeatMode), shuffle(shuffle), queue(queue), originalTrack(currentTrack) {}
+    repeatMode(repeatMode), shuffle(shuffle), originalTrack(currentTrack) {}
 
 void PreviousTrackCommand::execute()
 {
@@ -239,33 +223,25 @@ void PreviousTrackCommand::execute()
 
     originalTrack = currentTrack;
 
+    int playlistSize = static_cast<int>(playlist.size());
     int currentPos = std::distance(playlist.begin(), currentTrack);
 
     if (shuffle)
     {
-        if (queue.historyEmpty())
-            queue.initialize(playlist);
-
-        bool moved = queue.moveToPrevious(currentPos);
-
-        if (!moved)
+        if (playlistSize == 1)
         {
-            if (repeatMode == RepeatMode::RepeatAll)
-            {
-                queue.initialize(playlist);
-                moved = queue.moveToPrevious(currentPos);
-                if (!moved)
-                    return;
-            }
-            else
-            {
-                return;
-            }
+            currentTrack = playlist.begin();
         }
+        else
+        {
+            int newIndex = rand() % playlistSize;
+            while (newIndex == currentPos)
+                newIndex = rand() % playlistSize;
 
-        auto it = playlist.begin();
-        std::advance(it, currentPos);
-        currentTrack = it;
+            auto it = playlist.begin();
+            std::advance(it, newIndex);
+            currentTrack = it;
+        }
     }
     else
     {
@@ -294,6 +270,7 @@ void PreviousTrackCommand::execute()
         player->play();
     }
 }
+
 
 
 void PreviousTrackCommand::undo()
