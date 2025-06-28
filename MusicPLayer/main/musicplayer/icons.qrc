@@ -15,4 +15,7 @@
         <file>image/load_playlist.png</file>
         <file>image/save_playlist.png</file>
     </qresource>
+    <qresource prefix="/">
+        <file>image/image2.jpg</file>
+    </qresource>
 </RCC>

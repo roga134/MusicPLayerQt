@@ -35,6 +35,10 @@
 #include <QTreeView>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QImage>
+#include <QMediaMetaData>
+#include <QVariant>
+#include <QPixmap>
 #include "musicplayerqueue.h"
 
 enum RepeatMode
