@@ -39,17 +39,3 @@ void musicplayerpage::on_durationChanged(qint64 duration)
         }
     }
 }
-void musicplayerpage::on_mediaStatusChanged(QMediaPlayer::MediaStatus status)
-{
-    if (status == QMediaPlayer::EndOfMedia)
-    {
-        if (repeatMode == RepreatOne)
-        {
-            player->play();
-        }
-        else
-        {
-            on_pushButton_next_clicked();
-        }
-    }
-}

@@ -102,6 +102,8 @@ private slots:
 
     void loadCoverOfMusic();
 
+    void on_pushButton_mode3_clicked();
+
 private:
     Ui::musicplayerpage *ui;
     QMediaPlayer *player;
@@ -153,6 +155,8 @@ private:
     int countPlaylist = 0;
     int indexPlaylist = 0;
     QMap<int, QString> mainkey;
+
+    void updateCurrentSongLabel();
 };
 
 #endif

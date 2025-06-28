@@ -17,6 +17,8 @@ musicplayerpage::musicplayerpage(QWidget *parent)
     ui->pushButton_creatPlaylist->setIcon(QIcon(":/icons/image/add_playlist.png"));
     ui->pushButton_loadPlaylist->setIcon(QIcon(":/icons/image/load_playlist.png"));
     ui->pushButton_savePlaylist->setIcon(QIcon(":/icons/image/save_playlist.png"));
+    ui->pushButton_mode3->setIcon(QIcon(":/icons/image/no-repeat.png"));
+    ui->currentSongLabel->setText("آهنگ در حال پخش: -");
     ui->label_played->setMinimumWidth(40);
     ui->label_remaning->setMinimumWidth(40);
     ui->label_played->setText("00:00");

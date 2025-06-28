@@ -132,10 +132,13 @@ private:
 };
 
 
-class NextTrackCommand : public Command {
+class NextTrackCommand : public Command
+{
 public:
-    NextTrackCommand(QMediaPlayer* player, std::list<QUrl>& playlist, std::list<QUrl>::iterator& currentTrack,
-                     QMap<QString, QStandardItemModel*> model, RepeatMode repeatMode, bool shuffle);
+    NextTrackCommand(QMediaPlayer* player, std::list<QUrl>& playlist,
+                     std::list<QUrl>::iterator& currentTrack,
+                     RepeatMode repeatMode, bool& shuffle,
+                     std::vector<int>& shuffledIndices, int& shuffleIndex);
 
     void execute() override;
     void undo() override;
@@ -146,16 +149,20 @@ private:
     std::list<QUrl>& playlist;
     std::list<QUrl>::iterator& currentTrack;
     std::list<QUrl>::iterator originalTrack;
-    QMap<QString, QStandardItemModel*> model;
     RepeatMode repeatMode;
-    bool shuffle;
+    bool& shuffle;
+    std::vector<int>& shuffledIndices;
+    int& shuffleIndex;
 };
 
 
-class PreviousTrackCommand : public Command {
+class PreviousTrackCommand : public Command
+{
 public:
-    PreviousTrackCommand(QMediaPlayer* player, std::list<QUrl>& playlist, std::list<QUrl>::iterator& currentTrack,
-                         QMap<QString, QStandardItemModel*> model, RepeatMode repeatMode, bool shuffle);
+    PreviousTrackCommand(QMediaPlayer* player, std::list<QUrl>& playlist,
+                         std::list<QUrl>::iterator& currentTrack,
+                         RepeatMode repeatMode, bool& shuffle,
+                         std::vector<int>& shuffledIndices, int& shuffleIndex);
 
     void execute() override;
     void undo() override;
@@ -166,9 +173,10 @@ private:
     std::list<QUrl>& playlist;
     std::list<QUrl>::iterator& currentTrack;
     std::list<QUrl>::iterator originalTrack;
-    QMap<QString, QStandardItemModel*> model;
     RepeatMode repeatMode;
-    bool shuffle;
+    bool& shuffle;
+    std::vector<int>& shuffledIndices;
+    int& shuffleIndex;
 };
 
 

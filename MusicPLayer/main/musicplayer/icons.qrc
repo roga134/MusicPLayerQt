@@ -14,6 +14,9 @@
         <file>image/add_playlist.png</file>
         <file>image/load_playlist.png</file>
         <file>image/save_playlist.png</file>
+        <file>image/repeat.png</file>
+        <file>image/repeat-one.png</file>
+        <file>image/no-repeat.png</file>
     </qresource>
     <qresource prefix="/">
         <file>image/image2.jpg</file>

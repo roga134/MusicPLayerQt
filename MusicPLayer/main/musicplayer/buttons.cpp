@@ -24,6 +24,53 @@ void musicplayerpage::on_actionAdd_Track_triggered()
     }
 }
 
+void musicplayerpage::on_mediaStatusChanged(QMediaPlayer::MediaStatus status)
+{
+    if (status == QMediaPlayer::EndOfMedia)
+    {
+        if (repeatMode == RepeatMode::RepreatOne)
+        {
+            if (player && currentTrack != playlists[currentPlaylistName].end())
+            {
+                player->setSource(*currentTrack);
+                player->play();
+                updateCurrentSongLabel();
+            }
+        }
+        else
+        {
+            player->stop();
+            ui->pushButton_play->setIcon(QIcon(":/icons/image/play-buttton.png"));
+            ui->label_played->setText("00:00");
+            ui->label_remaning->setText("00:00");
+            ui->time->setValue(0);
+            updateCurrentSongLabel();
+        }
+    }
+}
+
+void musicplayerpage::on_pushButton_mode3_clicked()
+{
+    RepeatMode newMode;
+    if (repeatMode == RepeatMode::NoRepeat)
+    {
+        newMode = RepeatMode::RepeatAll;
+        ui->pushButton_mode3->setIcon(QIcon(":/icons/image/repeat.png"));
+    }
+    else if (repeatMode == RepeatMode::RepeatAll)
+    {
+        newMode = RepeatMode::RepreatOne;
+        ui->pushButton_mode3->setIcon(QIcon(":/icons/image/repeat-one.png"));
+    }
+    else
+    {
+        newMode = RepeatMode::NoRepeat;
+        ui->pushButton_mode3->setIcon(QIcon(":/icons/image/no-repeat.png"));
+    }
+    execute_Command(std::make_unique<SetRepeatModeCommand>(repeatMode, newMode));
+}
+
+
 void musicplayerpage::on_pushButton_play_clicked()
 {
     if (player->playbackState() == QMediaPlayer::PlayingState)
@@ -46,6 +93,8 @@ void musicplayerpage::on_pushButton_play_clicked()
             execute_Command(std::make_unique<PlayCommand>(player, currentTrack));
             lastTrack = currentTrack;
             ui->pushButton_play->setIcon(QIcon(":/icons/image/pause.png"));
+
+            updateCurrentSongLabel();
 
             decoder->stop();
             decoder->setSource(currentTrackUrl);
@@ -73,6 +122,7 @@ void musicplayerpage::onItemDoubleClicked(const QModelIndex &index)
     currentTrack = it;
 
     execute_Command(std::make_unique<PlayCommand>(player, currentTrack));
+    updateCurrentSongLabel();
     lastTrack = currentTrack;
     ui->pushButton_play->setIcon(QIcon(":/icons/image/pause.png"));
 }
@@ -124,10 +174,13 @@ void musicplayerpage::on_pushButton_prev_clicked()
         player,
         playlists[currentPlaylistName],
         currentTrack,
-        playlistModels,
         repeatMode,
-        shuffleMode
+        shuffleMode,
+        shuffledIndices,
+        shuffleIndex
         ));
+
+    updateCurrentSongLabel();
 
     int row = std::distance(playlists[currentPlaylistName].begin(), currentTrack);
     listsong[indexPlaylist]->setCurrentIndex(playlistModels[currentPlaylistName]->index(row, 0));
@@ -145,10 +198,13 @@ void musicplayerpage::on_pushButton_next_clicked()
         player,
         playlists[currentPlaylistName],
         currentTrack,
-        playlistModels,
         repeatMode,
-        shuffleMode
+        shuffleMode,
+        shuffledIndices,
+        shuffleIndex
         ));
+
+    updateCurrentSongLabel();
 
     int row = std::distance(playlists[currentPlaylistName].begin(), currentTrack);
     listsong[indexPlaylist]->setCurrentIndex(playlistModels[currentPlaylistName]->index(row, 0));

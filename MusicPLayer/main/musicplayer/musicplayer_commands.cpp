@@ -139,10 +139,13 @@ QString RemoveTrackCommand::description() const
 
 
 //NextTrackcommand class
-NextTrackCommand::NextTrackCommand(QMediaPlayer* player, std::list<QUrl>& playlist, std::list<QUrl>::iterator& currentTrack,
-                                   QMap<QString, QStandardItemModel*> model, RepeatMode repeatMode, bool shuffle)
-    : player(player), playlist(playlist), currentTrack(currentTrack), model(model),
-    repeatMode(repeatMode), shuffle(shuffle), originalTrack(currentTrack) {}
+NextTrackCommand::NextTrackCommand(QMediaPlayer* player, std::list<QUrl>& playlist,
+                                   std::list<QUrl>::iterator& currentTrack,
+                                   RepeatMode repeatMode, bool& shuffle,
+                                   std::vector<int>& shuffledIndices, int& shuffleIndex)
+    : player(player), playlist(playlist), currentTrack(currentTrack),
+    originalTrack(currentTrack), repeatMode(repeatMode), shuffle(shuffle),
+    shuffledIndices(shuffledIndices), shuffleIndex(shuffleIndex) {}
 
 void NextTrackCommand::execute()
 {
@@ -152,18 +155,29 @@ void NextTrackCommand::execute()
 
     if (shuffle)
     {
-        int playlistSize = static_cast<int>(playlist.size());
-        if (playlistSize == 1) {
+        if (shuffledIndices.empty())
+        {
             currentTrack = playlist.begin();
-        } else {
-            int newIndex = rand() % playlistSize;
-            int currentIndex = std::distance(playlist.begin(), currentTrack);
-            while (newIndex == currentIndex) {
-                newIndex = rand() % playlistSize;
+            qDebug() << "Shuffled indices empty, falling back to sequential.";
+        }
+        else
+        {
+            shuffleIndex++;
+            if (shuffleIndex >= shuffledIndices.size())
+            {
+                if (repeatMode == RepeatMode::RepeatAll)
+                {
+                    shuffleIndex = 0;
+                }
+                else
+                {
+                    shuffleIndex = shuffledIndices.size() - 1;
+                    return;
+                }
             }
-            auto it = playlist.begin();
-            std::advance(it, newIndex);
-            currentTrack = it;
+            int nextOriginalIndex = shuffledIndices[shuffleIndex];
+            currentTrack = playlist.begin();
+            std::advance(currentTrack, nextOriginalIndex);
         }
     }
     else
@@ -192,7 +206,6 @@ void NextTrackCommand::execute()
     }
 }
 
-
 void NextTrackCommand::undo()
 {
     currentTrack = originalTrack;
@@ -211,10 +224,13 @@ QString NextTrackCommand::description() const
 
 // PreviousCommand class
 
-PreviousTrackCommand::PreviousTrackCommand(QMediaPlayer* player, std::list<QUrl>& playlist, std::list<QUrl>::iterator& currentTrack,
-                                           QMap<QString, QStandardItemModel*> model, RepeatMode repeatMode, bool shuffle)
-    : player(player), playlist(playlist), currentTrack(currentTrack), model(model),
-    repeatMode(repeatMode), shuffle(shuffle), originalTrack(currentTrack) {}
+PreviousTrackCommand::PreviousTrackCommand(QMediaPlayer* player, std::list<QUrl>& playlist,
+                                           std::list<QUrl>::iterator& currentTrack,
+                                           RepeatMode repeatMode, bool& shuffle,
+                                           std::vector<int>& shuffledIndices, int& shuffleIndex)
+    : player(player), playlist(playlist), currentTrack(currentTrack),
+    originalTrack(currentTrack), repeatMode(repeatMode), shuffle(shuffle),
+    shuffledIndices(shuffledIndices), shuffleIndex(shuffleIndex) {}
 
 void PreviousTrackCommand::execute()
 {
@@ -223,24 +239,31 @@ void PreviousTrackCommand::execute()
 
     originalTrack = currentTrack;
 
-    int playlistSize = static_cast<int>(playlist.size());
-    int currentPos = std::distance(playlist.begin(), currentTrack);
-
     if (shuffle)
     {
-        if (playlistSize == 1)
+        if (shuffledIndices.empty())
         {
             currentTrack = playlist.begin();
+            qDebug() << "Shuffled indices empty, falling back to sequential.";
         }
         else
         {
-            int newIndex = rand() % playlistSize;
-            while (newIndex == currentPos)
-                newIndex = rand() % playlistSize;
-
-            auto it = playlist.begin();
-            std::advance(it, newIndex);
-            currentTrack = it;
+            shuffleIndex--;
+            if (shuffleIndex < 0)
+            {
+                if (repeatMode == RepeatMode::RepeatAll)
+                {
+                    shuffleIndex = shuffledIndices.size() - 1;
+                }
+                else
+                {
+                    shuffleIndex = 0;
+                    return;
+                }
+            }
+            int prevOriginalIndex = shuffledIndices[shuffleIndex];
+            currentTrack = playlist.begin();
+            std::advance(currentTrack, prevOriginalIndex);
         }
     }
     else

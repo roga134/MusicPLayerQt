@@ -92,3 +92,15 @@ void musicplayerpage::on_pushButton_back_clicked()
         ui->playlist->setRootIndex(previous);
     }
 }
+
+
+void musicplayerpage::updateCurrentSongLabel()
+{
+    if (currentTrack != playlists[currentPlaylistName].end()) {
+        QFileInfo fileInfo(currentTrack->toLocalFile());
+        QString songName = fileInfo.baseName();
+        ui->currentSongLabel->setText(QString("آهنگ در حال پخش: ") + songName);
+    } else {
+        ui->currentSongLabel->setText("No song playing");
+    }
+}
