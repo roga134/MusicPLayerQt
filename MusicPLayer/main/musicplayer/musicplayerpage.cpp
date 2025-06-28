@@ -67,6 +67,7 @@ musicplayerpage::musicplayerpage(QWidget *parent)
     updateQueueTab();
     connect(ui->tabWidget, &QTabWidget::currentChanged,this, &musicplayerpage::onTabChanged);
     connect(ui->tabWidget->tabBar(), &QTabBar::tabBarDoubleClicked,this, &musicplayerpage::renamePlaylistTab);
+    connect(player, &QMediaPlayer::metaDataChanged, this, &musicplayerpage::loadCoverOfMusic);
 
     setupVisualizerBars();
     ui->graphicsView->fitInView(scene->sceneRect(), Qt::KeepAspectRatio);

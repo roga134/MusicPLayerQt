@@ -102,6 +102,8 @@ private slots:
     void createQueueTab();
     void renamePlaylistTab(int index) ;
 
+    void loadCoverOfMusic();
+
 private:
     Ui::musicplayerpage *ui;
     QMediaPlayer *player;
