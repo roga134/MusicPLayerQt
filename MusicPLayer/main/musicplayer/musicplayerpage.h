@@ -98,8 +98,6 @@ private slots:
 
     void on_pushButton_loadPlaylist_clicked();
 
-    void updateQueueTab();
-    void createQueueTab();
     void renamePlaylistTab(int index) ;
 
 private:
@@ -149,12 +147,10 @@ private:
 
     std::vector<QListView*> listsong;
     QListView* queueListView;
-    QStandardItemModel* queueModel;
     int queueTabIndex;
     int countPlaylist = 0;
     int indexPlaylist = 0;
     QMap<int, QString> mainkey;
-    QMap<QString, MusicPlayerQueue> playlistQueues;
 };
 
 #endif

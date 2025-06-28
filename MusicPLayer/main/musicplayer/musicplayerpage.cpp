@@ -56,15 +56,14 @@ musicplayerpage::musicplayerpage(QWidget *parent)
     connect(timer, &QTimer::timeout, this, &musicplayerpage::processBuffer);
     timer->start(50);
 
-    createQueueTab();
     on_pushButton_creatPlaylist_clicked();
+
 
     connect(player, &QMediaPlayer::positionChanged, this, &musicplayerpage::on_positionChanged);
     connect(player, &QMediaPlayer::durationChanged, this, &musicplayerpage::on_durationChanged);
     connect(player, &QMediaPlayer::mediaStatusChanged, this, &musicplayerpage::on_mediaStatusChanged);
     connect(ui->playlist, &QTreeView::doubleClicked, this, &musicplayerpage::save_playlist_to_file);
     connect(ui->volum, &QSlider::valueChanged, this, &musicplayerpage::setvolum );
-    updateQueueTab();
     connect(ui->tabWidget, &QTabWidget::currentChanged,this, &musicplayerpage::onTabChanged);
     connect(ui->tabWidget->tabBar(), &QTabBar::tabBarDoubleClicked,this, &musicplayerpage::renamePlaylistTab);
 
