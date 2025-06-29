@@ -2,7 +2,8 @@
 #define MUSICPLAYERPAGE_H
 
 #include "musicplayer_commands.h"
-
+#include "myudpserver.h"
+#include "myudpclient.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -110,8 +111,9 @@ private slots:
 
     void ChangeGraphicView(QPoint pos);
 
+    void on_pushButton_server_clicked();
 
-    void on_pushButton_internet_clicked();
+    void on_pushButton_client_clicked();
 
 private:
     Ui::musicplayerpage *ui;
@@ -160,19 +162,12 @@ private:
 
     void updateCurrentSongLabel();
 
-    QTcpSocket* clientsocket;
-    QThread *threadClient;
-    void clientThreadFunction();
-    void runClient();
-    void sendMessageToServer(const QString &message);
-    QTcpServer *server ;
-    QThread *threadServer;
-    void runServer();
-    void serverThreadFunction();
     QStringList logMessages;
     QStandardItemModel *logmodel = nullptr;
     void addLogMessage(const QString &msg);
 
+    MyUdpServer *udpServer;
+    MyUdpClient *udpClient;
 };
 
 #endif

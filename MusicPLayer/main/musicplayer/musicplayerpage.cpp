@@ -66,6 +66,18 @@ musicplayerpage::musicplayerpage(QWidget *parent)
     }
 
     logmodel = new QStandardItemModel(this);
+
+    udpServer = new MyUdpServer(this);
+
+    connect(udpServer, &MyUdpServer::logMessage, this, [this](const QString &msg) {
+        addLogMessage(msg);
+    });
+
+    udpClient = new MyUdpClient(this);
+
+    connect(udpClient, &MyUdpClient::logMessage, this, [this](const QString &msg) {
+        addLogMessage(msg);
+    });
 }
 
 musicplayerpage::~musicplayerpage()

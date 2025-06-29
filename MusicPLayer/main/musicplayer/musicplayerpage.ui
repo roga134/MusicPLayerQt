@@ -45,9 +45,19 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="pushButton_internet">
+       <widget class="QPushButton" name="pushButton_server">
         <property name="text">
-         <string>internet</string>
+         <string>Server</string>
+        </property>
+        <property name="flat">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButton_client">
+        <property name="text">
+         <string>Client</string>
         </property>
         <property name="flat">
          <bool>true</bool>

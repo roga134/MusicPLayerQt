@@ -25,6 +25,8 @@ SOURCES += \
     main.cpp \
     musicplayer_commands.cpp \
     musicplayerpage.cpp \
+    myudpclient.cpp \
+    myudpserver.cpp \
     sound.cpp \
     time.cpp \
     toolbar.cpp \
@@ -33,7 +35,9 @@ SOURCES += \
 HEADERS += \
     ClickableRectItem.h \
     musicplayer_commands.h \
-    musicplayerpage.h
+    musicplayerpage.h \
+    myudpclient.h \
+    myudpserver.h
 
 FORMS += \
     musicplayerpage.ui
