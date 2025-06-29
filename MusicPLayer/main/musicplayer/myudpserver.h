@@ -3,6 +3,8 @@
 
 #include <QObject>
 #include <QUdpSocket>
+#include <QSet>
+#include <QPair>
 
 class MyUdpServer : public QObject
 {
@@ -11,15 +13,19 @@ class MyUdpServer : public QObject
 public:
     explicit MyUdpServer(QObject *parent = nullptr);
     bool startServer(quint16 port);
+    void sendToAllClients(const QString &message);
+    void sendToClient(const QHostAddress &address, quint16 port, const QString &message);
 
 signals:
     void logMessage(const QString &msg);
+    void playMusicRequested();
 
 private slots:
     void onReadyRead();
 
 private:
     QUdpSocket *udpSocket;
+    QSet<QPair<QHostAddress, quint16>> clients;
 };
 
 #endif // MYUDPSERVER_H

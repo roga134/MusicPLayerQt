@@ -78,6 +78,8 @@ musicplayerpage::musicplayerpage(QWidget *parent)
     connect(udpClient, &MyUdpClient::logMessage, this, [this](const QString &msg) {
         addLogMessage(msg);
     });
+
+    connect(udpServer, &MyUdpServer::playMusicRequested, this, &musicplayerpage::on_pushButton_play_clicked);
 }
 
 musicplayerpage::~musicplayerpage()

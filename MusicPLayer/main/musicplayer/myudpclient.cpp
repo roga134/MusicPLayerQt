@@ -5,6 +5,17 @@ MyUdpClient::MyUdpClient(QObject *parent)
     : QObject(parent), udpSocket(new QUdpSocket(this))
 {
     connect(udpSocket, &QUdpSocket::readyRead, this, &MyUdpClient::onReadyRead);
+
+    quint16 clientPort = 45454;
+
+    if (!udpSocket->bind(QHostAddress::AnyIPv4, clientPort))
+    {
+        emit logMessage(QString("Failed to bind UDP client: %1").arg(udpSocket->errorString()));
+    }
+    else
+    {
+        emit logMessage(QString("UDP Client listening on port %1").arg(clientPort));
+    }
 }
 
 void MyUdpClient::sendMessage(const QString &message, const QHostAddress &host, quint16 port)
@@ -16,7 +27,8 @@ void MyUdpClient::sendMessage(const QString &message, const QHostAddress &host, 
 
 void MyUdpClient::onReadyRead()
 {
-    while (udpSocket->hasPendingDatagrams()) {
+    while (udpSocket->hasPendingDatagrams())
+    {
         QByteArray datagram;
         datagram.resize(int(udpSocket->pendingDatagramSize()));
         QHostAddress sender;
@@ -24,6 +36,16 @@ void MyUdpClient::onReadyRead()
 
         udpSocket->readDatagram(datagram.data(), datagram.size(), &sender, &senderPort);
 
-        emit logMessage(QString("Received from %1:%2 - %3").arg(sender.toString()).arg(senderPort).arg(QString(datagram)));
+        QString msg = QString::fromUtf8(datagram);
+        emit logMessage(QString("Received from %1:%2 - %3").arg(sender.toString()).arg(senderPort).arg(msg));
+
+        if (msg == "play_music")
+        {
+            //emit playMusicRequested();
+        }
+        else if (msg == "stop_music")
+        {
+            //emit stopMusicRequested();
+        }
     }
 }

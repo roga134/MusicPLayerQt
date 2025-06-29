@@ -115,6 +115,8 @@ private slots:
 
     void on_pushButton_client_clicked();
 
+    void handleplaybutton();
+
 private:
     Ui::musicplayerpage *ui;
     QMediaPlayer *player;
@@ -168,6 +170,7 @@ private:
 
     MyUdpServer *udpServer;
     MyUdpClient *udpClient;
+    int is_server = 0;
 };
 
 #endif

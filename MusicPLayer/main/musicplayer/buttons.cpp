@@ -48,6 +48,8 @@ void musicplayerpage::on_pushButton_mode3_clicked()
 
 void musicplayerpage::on_pushButton_play_clicked()
 {
+    handleplaybutton();
+
     if (player->playbackState() == QMediaPlayer::PlayingState)
     {
         execute_Command(std::make_unique<PauseCommand>(player));
@@ -77,6 +79,8 @@ void musicplayerpage::on_pushButton_play_clicked()
 
 void musicplayerpage::onItemDoubleClicked(const QModelIndex &index)
 {
+    handleplaybutton();
+
     auto &playlist = playlists[currentPlaylistName];
     int row = index.row();
 

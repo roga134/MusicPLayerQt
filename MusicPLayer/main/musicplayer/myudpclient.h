@@ -12,8 +12,10 @@ public:
     explicit MyUdpClient(QObject *parent = nullptr);
     void sendMessage(const QString &message, const QHostAddress &host, quint16 port);
 
+
 signals:
     void logMessage(const QString &msg);
+    //void playMusicRequested();
 
 private slots:
     void onReadyRead();
