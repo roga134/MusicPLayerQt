@@ -4,6 +4,7 @@
 #include "musicplayer_commands.h"
 #include "myudpserver.h"
 #include "myudpclient.h"
+#include "chatmessagedelegate.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -117,6 +118,10 @@ private slots:
 
     void handleplaybutton();
 
+    void on_pushButton_chat_clicked();
+
+    void addChatMessage(const QString &message, bool isMyMessage);
+
 private:
     Ui::musicplayerpage *ui;
     QMediaPlayer *player;
@@ -171,6 +176,13 @@ private:
     MyUdpServer *udpServer;
     MyUdpClient *udpClient;
     int is_server = 0;
+
+     QPushButton *sendButton = nullptr;
+     QLineEdit *chatLineEdit = nullptr;
+     bool chatActive = false;
+     QStandardItemModel *chatModel =nullptr;
+     ChatMessageDelegate *chatDelegate;
+
 };
 
 #endif

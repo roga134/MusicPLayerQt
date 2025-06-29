@@ -19,6 +19,7 @@ public:
 signals:
     void logMessage(const QString &msg);
     void playMusicRequested();
+    void messageReceived(const QString &message, const QString &sender);
 
 private slots:
     void onReadyRead();

@@ -6,7 +6,7 @@ MyUdpClient::MyUdpClient(QObject *parent)
 {
     connect(udpSocket, &QUdpSocket::readyRead, this, &MyUdpClient::onReadyRead);
 
-    quint16 clientPort = 45454;
+    quint16 clientPort = 45454 ;
 
     if (!udpSocket->bind(QHostAddress::AnyIPv4, clientPort))
     {
@@ -38,6 +38,7 @@ void MyUdpClient::onReadyRead()
 
         QString msg = QString::fromUtf8(datagram);
         emit logMessage(QString("Received from %1:%2 - %3").arg(sender.toString()).arg(senderPort).arg(msg));
+        emit messageReceived(msg, sender.toString());
 
         if (msg == "play_music")
         {

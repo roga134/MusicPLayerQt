@@ -80,14 +80,72 @@ musicplayerpage::musicplayerpage(QWidget *parent)
     });
 
     connect(udpServer, &MyUdpServer::playMusicRequested, this, &musicplayerpage::on_pushButton_play_clicked);
+
+    chatDelegate = new ChatMessageDelegate(this);
+
+    chatModel = new QStandardItemModel(this);
+    chatLineEdit = new QLineEdit(this);
+    chatLineEdit->setPlaceholderText("Enter your massage");
+    sendButton = new QPushButton("send", this);
+    chatLineEdit->hide();
+    sendButton->hide();
+    QVBoxLayout *mainLayout = new QVBoxLayout(ui->generalListView);
+    mainLayout->addWidget(ui->generalListView);
+
+    QHBoxLayout * inputLayput = new QHBoxLayout;
+    chatLineEdit->setSizePolicy(QSizePolicy::Expanding ,QSizePolicy::Fixed);
+    chatLineEdit->setFixedHeight(30);
+
+    sendButton->setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Fixed);
+    sendButton->setFixedSize(60,30);
+    inputLayput->addWidget(chatLineEdit);
+    inputLayput->addWidget(sendButton);
+    mainLayout->addLayout(inputLayput);
+
+    connect(udpServer, &MyUdpServer::messageReceived, this, [this](const QString &msg, const QString &sender) {
+        QMetaObject::invokeMethod(this,[this,msg,sender]()
+      {
+        if(chatActive){
+        addChatMessage(sender + ": " + msg, false);
+        }
+        else
+        {
+            addLogMessage(sender +":"+msg);
+        }
+
+        },Qt::QueuedConnection);
+    });
+
+    connect(udpClient, &MyUdpClient::messageReceived, this, [this](const QString &msg, const QString &sender) {
+        QMetaObject::invokeMethod(this,[this,msg,sender]()
+                                  {
+                                      if(chatActive){
+                                          addChatMessage(sender + ": " + msg, false);
+                                      }
+                                      else
+                                      {
+                                          addLogMessage(sender +":"+msg);
+                                      }
+
+                                  },Qt::QueuedConnection);
+    });
+
 }
 
 musicplayerpage::~musicplayerpage()
 {
     delete player;
     delete audioOutput;
+    delete chatDelegate;
     for (auto model : playlistModels) {
         delete model;
     }
     delete ui;
+
 }
+void musicplayerpage::ChangeGraphicView(QPoint pos)
+{
+
+}
+
+

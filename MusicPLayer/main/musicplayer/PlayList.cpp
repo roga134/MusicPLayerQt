@@ -318,7 +318,9 @@ void musicplayerpage::on_mediaStatusChanged(QMediaPlayer::MediaStatus status)
 
         player->setSource(nextTrack);
         player->play();
-        updateCurrentSongLabel();
+        QFileInfo fileInfo(nextTrack.toLocalFile());
+        QString songName = fileInfo.baseName();
+        ui->currentSongLabel->setText(QString("آهنگ در حال پخش: ") + songName);
 
         if (temporary.empty() && queueModel)
             queueModel->clear();

@@ -22,6 +22,7 @@ SOURCES += \
     ManageNetwork.cpp \
     PlayList.cpp \
     buttons.cpp \
+    chatmessagedelegate.cpp \
     main.cpp \
     musicplayer_commands.cpp \
     musicplayerpage.cpp \
@@ -30,10 +31,11 @@ SOURCES += \
     sound.cpp \
     time.cpp \
     toolbar.cpp \
-    ‫‪visualizer‬‬.cpp
+
 
 HEADERS += \
     ClickableRectItem.h \
+    chatmessagedelegate.h \
     musicplayer_commands.h \
     musicplayerpage.h \
     myudpclient.h \

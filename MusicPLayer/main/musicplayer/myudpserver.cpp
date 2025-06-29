@@ -31,13 +31,14 @@ void MyUdpServer::onReadyRead()
 
         QString msg = QString::fromUtf8(datagram);
         emit logMessage(QString("Received from %1:%2 - %3").arg(sender.toString()).arg(senderPort).arg(msg));
+        emit messageReceived(msg, sender.toString());
 
         QPair<QHostAddress, quint16> clientKey(sender, senderPort);
         if (!clients.contains(clientKey))
             clients.insert(clientKey);
 
-        QByteArray response = "Hello UDP client!";
-        udpSocket->writeDatagram(response, sender, senderPort);
+        //QByteArray response = "Hello UDP client!";
+        //udpSocket->writeDatagram(response, sender, senderPort);
 
         QString command = QString(datagram).trimmed().toLower();
         if (command == "pause")
@@ -62,3 +63,4 @@ void MyUdpServer::sendToClient(const QHostAddress &address, quint16 port, const 
     udpSocket->writeDatagram(data, address, port);
     emit logMessage(QString("Sent to %1:%2 - %3").arg(address.toString()).arg(port).arg(message));
 }
+
