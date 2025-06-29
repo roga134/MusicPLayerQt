@@ -1,6 +1,5 @@
 QT += core gui multimedia multimediawidgets widgets
 QT +=  network
-LIBS += -lfftw3
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 

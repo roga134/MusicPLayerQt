@@ -160,11 +160,6 @@ private:
 
     void updateCurrentSongLabel();
 
-    QAudioDecoder* decoder;
-    QGraphicsScene *scene;
-    void drawBars(const QVector<double>& magnitudes);
-    void processBuffer();
-
     QTcpSocket* clientsocket;
     QThread *threadClient;
     void clientThreadFunction();

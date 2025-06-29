@@ -40,7 +40,6 @@
 #include <QVariant>
 #include <QPixmap>
 #include <QGraphicsScene>
-#include <fftw3.h>
 #include <cmath>
 #include <QTcpSocket>
 #include <QTcpServer>

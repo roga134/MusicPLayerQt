@@ -65,19 +65,6 @@ musicplayerpage::musicplayerpage(QWidget *parent)
         connect(view, &ClickableGraphicsView::clicked, this, &musicplayerpage::ChangeGraphicView);
     }
 
-    scene = new QGraphicsScene(this) ;
-    ui->graphicsView->setScene(scene);
-
-    decoder = new QAudioDecoder(this);
-    QAudioFormat desiredFormat;
-    desiredFormat.setSampleRate(44100);
-    desiredFormat.setChannelCount(1);
-    desiredFormat.setSampleFormat(QAudioFormat::Int16);
-    decoder->setAudioFormat(desiredFormat);
-    decoder->setSource(QUrl::fromLocalFile("/home/roga-134/Desktop/musicplayer/MusicPlayer/MusicPLayer/main/musicplayer/audio.mp3"));
-    connect(decoder, &QAudioDecoder::bufferReady, this, &musicplayerpage::processBuffer);
-    decoder->start();
-
     logmodel = new QStandardItemModel(this);
 }
 

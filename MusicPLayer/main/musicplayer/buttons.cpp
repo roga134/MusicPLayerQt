@@ -48,6 +48,7 @@ void musicplayerpage::on_pushButton_mode3_clicked()
 
 void musicplayerpage::on_pushButton_play_clicked()
 {
+    sendMessageToServer("دلت بسوزه برای من وصله");
     if (player->playbackState() == QMediaPlayer::PlayingState)
     {
         execute_Command(std::make_unique<PauseCommand>(player));

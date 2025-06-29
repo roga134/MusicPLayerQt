@@ -71,7 +71,11 @@ void musicplayerpage::runClient()
     });
 
     QTimer::singleShot(1000, [this]() {
-        clientsocket->connectToHost("127.0.0.1", 1234);
+        clientsocket->connectToHost("5.209.67.164", 1234);//127.0.0.1 for me
+    });
+
+    QObject::connect(clientsocket, &QTcpSocket::errorOccurred, this, [this]() {
+        addLogMessage("Socket error: " + clientsocket->errorString());
     });
 }
 
