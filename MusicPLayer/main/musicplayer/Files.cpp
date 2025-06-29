@@ -25,11 +25,15 @@ void musicplayerpage::on_actionopen_file_triggered()
 
 void musicplayerpage::on_pushButton_files_clicked()
 {
+    ui->generalListView->setModel(playlistModels[currentPlaylistName]);
+    ui->generalListView->setSelectionMode(QAbstractItemView::SingleSelection);
+    ui->generalListView->setSelectionBehavior(QAbstractItemView::SelectRows);
+
     fileclied = true;
     fileSystemModel = new QFileSystemModel(this);
     fileSystemModel->setRootPath(QDir::rootPath());
-    ui->playlist->setModel(fileSystemModel);
-    ui->playlist->setRootIndex(fileSystemModel->index(QDir::homePath()));
+    ui->generalListView->setModel(fileSystemModel);
+    ui->generalListView->setRootIndex(fileSystemModel->index(QDir::homePath()));
 }
 
 void musicplayerpage::save_playlist_to_file(const QModelIndex &index)
@@ -38,9 +42,9 @@ void musicplayerpage::save_playlist_to_file(const QModelIndex &index)
 
     if (fileSystemModel->isDir(index))
     {
-        directoryHistory.push(ui->playlist->rootIndex());
+        directoryHistory.push(ui->generalListView->rootIndex());
         forwardHistory.clear();
-        ui->playlist->setRootIndex(index);
+        ui->generalListView->setRootIndex(index);
     }
     else if (filePath.endsWith(".mp3", Qt::CaseInsensitive) || filePath.endsWith(".wav", Qt::CaseInsensitive))
     {
@@ -49,7 +53,6 @@ void musicplayerpage::save_playlist_to_file(const QModelIndex &index)
         execute_Command(std::make_unique<AddTrackCommand>(playlists[mainkey[indexPlaylist]], playlistModels, track, mainkey[indexPlaylist]));
 
         listsong[indexPlaylist]->setModel(playlistModels[mainkey[indexPlaylist]]);
-        decoder->setSource(track);
     }
     else
     {
@@ -62,10 +65,10 @@ void musicplayerpage::on_pushButton_home_clicked()
     if(fileclied)
     {
         forwardHistory.clear();
-        directoryHistory.push(ui->playlist->rootIndex());
+        directoryHistory.push(ui->generalListView->rootIndex());
 
         QModelIndex homeIndex = fileSystemModel->index(QDir::homePath());
-        ui->playlist->setRootIndex(homeIndex);
+        ui->generalListView->setRootIndex(homeIndex);
     }
     else
     {
@@ -77,9 +80,9 @@ void musicplayerpage::on_pushButton_forward_clicked()
 {
     if (!forwardHistory.isEmpty())
     {
-        directoryHistory.push(ui->playlist->rootIndex());
+        directoryHistory.push(ui->generalListView->rootIndex());
         QModelIndex next = forwardHistory.pop();
-        ui->playlist->setRootIndex(next);
+        ui->generalListView->setRootIndex(next);
     }
 }
 
@@ -87,9 +90,9 @@ void musicplayerpage::on_pushButton_back_clicked()
 {
     if (!directoryHistory.isEmpty())
     {
-        forwardHistory.push(ui->playlist->rootIndex());
+        forwardHistory.push(ui->generalListView->rootIndex());
         QModelIndex previous = directoryHistory.pop();
-        ui->playlist->setRootIndex(previous);
+        ui->generalListView->setRootIndex(previous);
     }
 }
 

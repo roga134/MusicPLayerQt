@@ -113,7 +113,7 @@
        </layout>
       </item>
       <item>
-       <widget class="QListView" name="playlist"/>
+       <widget class="QListView" name="generalListView"/>
       </item>
      </layout>
     </item>

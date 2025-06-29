@@ -4,9 +4,11 @@
 #include "musicplayer_commands.h"
 
 
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class musicplayerpage; }
 QT_END_NAMESPACE
+
 
 class musicplayerpage : public QMainWindow
 {
@@ -15,6 +17,7 @@ class musicplayerpage : public QMainWindow
 public:
    explicit musicplayerpage(QWidget *parent = nullptr);
     ~musicplayerpage();
+
 
 private slots:
     void on_pushButton_play_clicked();
@@ -86,13 +89,14 @@ private slots:
     void on_actionsave_playlist_triggered();
     void on_actionload_playlist_triggered();
 
-    void processBuffer();
-    void updateVisualizer();
-    void setupVisualizerBars();
-    void showEvent(QShowEvent *event);
 
     void on_pushButton_creatPlaylist_clicked();
     void onTabChanged(int index);
+
+    void showContextMenu(const QPoint &pos);
+    void addToQueueFromListView(QListView *listView, const QModelIndex &index);
+    void createQueueTab();
+
 
     void on_pushButton_savePlaylist_clicked();
 
@@ -104,21 +108,16 @@ private slots:
 
     void on_pushButton_mode3_clicked();
 
+    void ChangeGraphicView(QPoint pos);
+
+
+    void on_pushButton_internet_clicked();
+
 private:
     Ui::musicplayerpage *ui;
     QMediaPlayer *player;
     QAudioOutput *audioOutput;
     std::vector<QStandardItemModel*> listModels;
-
-    QString audioFilePath;
-    QAudioDecoder *decoder;
-    QGraphicsScene *scene;
-    QTimer *timer;
-    QList<QGraphicsRectItem*> bars;
-    double currentAmplitude = 0;
-    double displayedAmplitude = 0;
-    QVector<double> currentBands;
-
 
 
     std::vector<int> shuffledIndices;
@@ -128,7 +127,7 @@ private:
     QMap<QString, QStandardItemModel*> playlistModels;
     std::list<QUrl>::iterator currentTrack ;
     std::list<QUrl>::iterator lastTrack;
-    std::queue<QUrl> temporary;
+    //std::queue<QUrl> temporary;
 
 
     RepeatMode repeatMode = NoRepeat;
@@ -149,14 +148,36 @@ private:
     void play_current_track();
     QString formatTime(qint64 milliseconds);
 
+    QListView* queueListView = nullptr;
+    QStandardItemModel* queueModel = nullptr;
+    int queueTabIndex = -1;
+    std::queue<QUrl> temporary;
+
     std::vector<QListView*> listsong;
-    QListView* queueListView;
-    int queueTabIndex;
     int countPlaylist = 0;
     int indexPlaylist = 0;
     QMap<int, QString> mainkey;
 
     void updateCurrentSongLabel();
+
+    QAudioDecoder* decoder;
+    QGraphicsScene *scene;
+    void drawBars(const QVector<double>& magnitudes);
+    void processBuffer();
+
+    QTcpSocket* clientsocket;
+    QThread *threadClient;
+    void clientThreadFunction();
+    void runClient();
+    void sendMessageToServer(const QString &message);
+    QTcpServer *server ;
+    QThread *threadServer;
+    void runServer();
+    void serverThreadFunction();
+    QStringList logMessages;
+    QStandardItemModel *logmodel = nullptr;
+    void addLogMessage(const QString &msg);
+
 };
 
 #endif

@@ -24,31 +24,6 @@ void musicplayerpage::on_actionAdd_Track_triggered()
     }
 }
 
-void musicplayerpage::on_mediaStatusChanged(QMediaPlayer::MediaStatus status)
-{
-    if (status == QMediaPlayer::EndOfMedia)
-    {
-        if (repeatMode == RepeatMode::RepreatOne)
-        {
-            if (player && currentTrack != playlists[currentPlaylistName].end())
-            {
-                player->setSource(*currentTrack);
-                player->play();
-                updateCurrentSongLabel();
-            }
-        }
-        else
-        {
-            player->stop();
-            ui->pushButton_play->setIcon(QIcon(":/icons/image/play-buttton.png"));
-            ui->label_played->setText("00:00");
-            ui->label_remaning->setText("00:00");
-            ui->time->setValue(0);
-            updateCurrentSongLabel();
-        }
-    }
-}
-
 void musicplayerpage::on_pushButton_mode3_clicked()
 {
     RepeatMode newMode;
@@ -96,12 +71,6 @@ void musicplayerpage::on_pushButton_play_clicked()
 
             updateCurrentSongLabel();
 
-            decoder->stop();
-            decoder->setSource(currentTrackUrl);
-            connect(decoder, &QAudioDecoder::bufferReady, this, &musicplayerpage::processBuffer);
-            decoder->start();
-
-            timer->start(50);
         }
     }
 }

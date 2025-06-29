@@ -26,6 +26,12 @@ musicplayerpage::musicplayerpage(QWidget *parent)
     ui->tabWidget->setTabText(countPlaylist, QString::fromStdString("PlayList " + std::to_string(countPlaylist + 1)));
 
 
+    ClickableGraphicsView* newView = new ClickableGraphicsView(this);
+    ui->horizontalLayout->replaceWidget(ui->graphicsView, newView);
+    delete ui->graphicsView;
+    ui->graphicsView = newView;
+
+
     player = new QMediaPlayer(this);
     audioOutput = new QAudioOutput(this);
     ui->volum->setValue(50);
@@ -33,30 +39,13 @@ musicplayerpage::musicplayerpage(QWidget *parent)
     ui->volum->setRange(0, 100);
     player->setAudioOutput(audioOutput);
 
-
-    // Setup Playlist Model
     playlistModels[currentPlaylistName] = new QStandardItemModel(this);
     playlistModels[currentPlaylistName]->setHorizontalHeaderLabels({"Track", "Duration"});
-    ui->playlist->setModel(playlistModels[currentPlaylistName]);
-    ui->playlist->setSelectionMode(QAbstractItemView::SingleSelection);
-    ui->playlist->setSelectionBehavior(QAbstractItemView::SelectRows);
-
-    // Initialize default playlist
     currentPlaylistName = "Default";
     playlists[currentPlaylistName] = std::list<QUrl>();
     currentTrack = playlists[currentPlaylistName].end();
 
-
     repeatMode = RepeatMode::NoRepeat;
-
-    decoder = new QAudioDecoder(this);
-    timer = new QTimer(this);
-    scene = new QGraphicsScene(this);
-    ui->graphicsView->setScene(scene);
-
-    connect(decoder, &QAudioDecoder::bufferReady, this, &musicplayerpage::processBuffer);
-    connect(timer, &QTimer::timeout, this, &musicplayerpage::processBuffer);
-    timer->start(50);
 
     on_pushButton_creatPlaylist_clicked();
 
@@ -64,14 +53,32 @@ musicplayerpage::musicplayerpage(QWidget *parent)
     connect(player, &QMediaPlayer::positionChanged, this, &musicplayerpage::on_positionChanged);
     connect(player, &QMediaPlayer::durationChanged, this, &musicplayerpage::on_durationChanged);
     connect(player, &QMediaPlayer::mediaStatusChanged, this, &musicplayerpage::on_mediaStatusChanged);
-    connect(ui->playlist, &QTreeView::doubleClicked, this, &musicplayerpage::save_playlist_to_file);
+    connect(ui->generalListView, &QTreeView::doubleClicked, this, &musicplayerpage::save_playlist_to_file);
     connect(ui->volum, &QSlider::valueChanged, this, &musicplayerpage::setvolum );
     connect(ui->tabWidget, &QTabWidget::currentChanged,this, &musicplayerpage::onTabChanged);
     connect(ui->tabWidget->tabBar(), &QTabBar::tabBarDoubleClicked,this, &musicplayerpage::renamePlaylistTab);
     connect(player, &QMediaPlayer::metaDataChanged, this, &musicplayerpage::loadCoverOfMusic);
 
-    setupVisualizerBars();
-    ui->graphicsView->fitInView(scene->sceneRect(), Qt::KeepAspectRatio);
+    auto view = qobject_cast<ClickableGraphicsView*>(ui->graphicsView);
+    if (view)
+    {
+        connect(view, &ClickableGraphicsView::clicked, this, &musicplayerpage::ChangeGraphicView);
+    }
+
+    scene = new QGraphicsScene(this) ;
+    ui->graphicsView->setScene(scene);
+
+    decoder = new QAudioDecoder(this);
+    QAudioFormat desiredFormat;
+    desiredFormat.setSampleRate(44100);
+    desiredFormat.setChannelCount(1);
+    desiredFormat.setSampleFormat(QAudioFormat::Int16);
+    decoder->setAudioFormat(desiredFormat);
+    decoder->setSource(QUrl::fromLocalFile("/home/roga-134/Desktop/musicplayer/MusicPlayer/MusicPLayer/main/musicplayer/audio.mp3"));
+    connect(decoder, &QAudioDecoder::bufferReady, this, &musicplayerpage::processBuffer);
+    decoder->start();
+
+    logmodel = new QStandardItemModel(this);
 }
 
 musicplayerpage::~musicplayerpage()

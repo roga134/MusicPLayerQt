@@ -20,6 +20,9 @@ void musicplayerpage::on_pushButton_creatPlaylist_clicked()
 
     connect(listView, &QListView::doubleClicked, this, &musicplayerpage::onItemDoubleClicked);
 
+    listView->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(listView , &QListView::customContextMenuRequested , this , &musicplayerpage::showContextMenu);
+
     QString key = QString("PlayList %1").arg(countPlaylist+1);
     playlistModels[key] = newModel;
     playlists[key] = std::list<QUrl>();
@@ -223,5 +226,134 @@ void musicplayerpage::renamePlaylistTab(int index)
 
         qDebug() << "Playlist renamed from" << oldName << "to" << newName;
     }
+}
+
+void musicplayerpage::showContextMenu(const QPoint &pos)
+{
+    QListView *listView = qobject_cast<QListView*>(sender());
+    if (!listView) return;
+
+    QModelIndex index = listView->indexAt(pos);
+    if (!index.isValid()) return;
+
+    QMenu contextMenu(this);
+    QAction *addToQueueAction = contextMenu.addAction("Add to Queue");
+
+    connect(addToQueueAction, &QAction::triggered, this, [this, listView, index]() {
+        this->addToQueueFromListView(listView, index);
+    });
+
+    contextMenu.exec(listView->viewport()->mapToGlobal(pos));
+}
+
+void musicplayerpage::addToQueueFromListView(QListView *listView, const QModelIndex &index)
+{
+    QString playlistName;
+
+    for (const auto& key : playlistModels.keys())
+    {
+        if (playlistModels[key] == listView->model())
+        {
+            playlistName = key;
+            break;
+        }
+    }
+
+    if (playlistName.isEmpty()) return;
+
+    auto& playlist = playlists[playlistName];
+    int row = index.row();
+    if (row < 0 || row >= static_cast<int>(playlist.size())) return;
+
+    auto it = playlist.begin();
+    std::advance(it, row);
+
+    temporary.push(*it);
+
+    if (!queueListView) {
+        createQueueTab();
+    }
+
+    QStandardItem *item = new QStandardItem(it->fileName());
+    item->setData(it->toString(), Qt::UserRole);
+    queueModel->appendRow(item);
+
+    if (player->playbackState() != QMediaPlayer::PlayingState && temporary.size() == 1) {
+        QUrl nextTrack = temporary.front();
+        player->setSource(nextTrack);
+        player->play();
+        updateCurrentSongLabel();
+    }
+
+    QMessageBox::information(this, "Added to Queue", "Track added to temporary queue");
+}
+
+
+void musicplayerpage::createQueueTab()
+{
+    QWidget *queueTab = new QWidget();
+
+    queueListView = new QListView(queueTab);
+    queueModel = new QStandardItemModel(queueListView);
+
+    queueListView->setModel(queueModel);
+
+    QVBoxLayout *layout = new QVBoxLayout(queueTab);
+    layout->addWidget(queueListView);
+    queueTab->setLayout(layout);
+
+    queueTabIndex = ui->tabWidget->addTab(queueTab, "Queue");
+    ui->tabWidget->setCurrentIndex(queueTabIndex);
+}
+
+void musicplayerpage::on_mediaStatusChanged(QMediaPlayer::MediaStatus status)
+{
+    if (status != QMediaPlayer::EndOfMedia)
+        return;
+
+    if (!temporary.empty())
+    {
+        QUrl nextTrack = temporary.front();
+        temporary.pop();
+
+        player->setSource(nextTrack);
+        player->play();
+        updateCurrentSongLabel();
+
+        if (temporary.empty() && queueModel)
+            queueModel->clear();
+
+        return;
+    }
+
+    if (repeatMode == RepeatMode::RepreatOne)
+    {
+        if (player && currentTrack != playlists[currentPlaylistName].end())
+        {
+            player->setSource(*currentTrack);
+            player->play();
+            updateCurrentSongLabel();
+            return;
+        }
+    }
+
+    if (!currentPlaylistName.isEmpty() && currentTrack != playlists[currentPlaylistName].end())
+    {
+        ++currentTrack;
+        if (currentTrack != playlists[currentPlaylistName].end())
+        {
+            player->setSource(*currentTrack);
+            player->play();
+            updateCurrentSongLabel();
+            return;
+        }
+    }
+
+    player->stop();
+    ui->pushButton_play->setIcon(QIcon(":/icons/image/play-buttton.png"));
+    ui->label_played->setText("00:00");
+    ui->label_remaning->setText("00:00");
+    ui->time->setValue(0);
+    updateCurrentSongLabel();
 }
 
