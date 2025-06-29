@@ -67,19 +67,21 @@ musicplayerpage::musicplayerpage(QWidget *parent)
 
     logmodel = new QStandardItemModel(this);
 
-    udpServer = new MyUdpServer(this);
+    tcpServer = new MyTcpServer(this);
 
-    connect(udpServer, &MyUdpServer::logMessage, this, [this](const QString &msg) {
+    connect(tcpServer, &MyTcpServer::logMessage, this, [this](const QString &msg) {
         addLogMessage(msg);
     });
 
-    udpClient = new MyUdpClient(this);
+    tcpClient = new MyTcpClient(this);
+    tcpClient->setMusicPlayerPage(this);
 
-    connect(udpClient, &MyUdpClient::logMessage, this, [this](const QString &msg) {
+    connect(tcpClient, &MyTcpClient::logMessage, this, [this](const QString &msg) {
         addLogMessage(msg);
     });
 
-    connect(udpServer, &MyUdpServer::playMusicRequested, this, &musicplayerpage::on_pushButton_play_clicked);
+    connect(tcpServer, &MyTcpServer::playMusicRequested,this, &musicplayerpage::play_pause_network);
+    connect(tcpClient, &MyTcpClient::playMusicRequestedclient,this, &musicplayerpage::play_pause_network);
 
     chatDelegate = new ChatMessageDelegate(this);
 
@@ -95,28 +97,27 @@ musicplayerpage::musicplayerpage(QWidget *parent)
     QHBoxLayout * inputLayput = new QHBoxLayout;
     chatLineEdit->setSizePolicy(QSizePolicy::Expanding ,QSizePolicy::Fixed);
     chatLineEdit->setFixedHeight(30);
+    /*
+    QHBoxLayout *inputLayout = new QHBoxLayout();
+    inputLayout->addWidget(messageInput);
+    inputLayout->addWidget(sendMessageButton);
+    inputLayout->setStretch(0, 1);
 
+    QVBoxLayout *networkLayout = new QVBoxLayout(networkTab);
+    QScrollArea *scrollArea = new QScrollArea();
+    scrollArea->setWidgetResizable(true);
+    scrollArea->setWidget(chatDisplay);
+    networkLayout->addWidget(scrollArea);
+    networkLayout->setStretch(0, 1);
+    networkLayout->addLayout(inputLayout);
+    */
     sendButton->setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Fixed);
     sendButton->setFixedSize(60,30);
     inputLayput->addWidget(chatLineEdit);
     inputLayput->addWidget(sendButton);
     mainLayout->addLayout(inputLayput);
 
-    connect(udpServer, &MyUdpServer::messageReceived, this, [this](const QString &msg, const QString &sender) {
-        QMetaObject::invokeMethod(this,[this,msg,sender]()
-      {
-        if(chatActive){
-        addChatMessage(sender + ": " + msg, false);
-        }
-        else
-        {
-            addLogMessage(sender +":"+msg);
-        }
-
-        },Qt::QueuedConnection);
-    });
-
-    connect(udpClient, &MyUdpClient::messageReceived, this, [this](const QString &msg, const QString &sender) {
+    connect(tcpServer, &MyTcpServer::messageReceived, this, [this](const QString &msg, const QString &sender) {
         QMetaObject::invokeMethod(this,[this,msg,sender]()
                                   {
                                       if(chatActive){
@@ -130,6 +131,19 @@ musicplayerpage::musicplayerpage(QWidget *parent)
                                   },Qt::QueuedConnection);
     });
 
+    connect(tcpClient, &MyTcpClient::messageReceived, this, [this](const QString &msg, const QString &sender) {
+        QMetaObject::invokeMethod(this,[this,msg,sender]()
+                                  {
+                                      if(chatActive){
+                                          addChatMessage(sender + ": " + msg, false);
+                                      }
+                                      else
+                                      {
+                                          addLogMessage(sender +":"+msg);
+                                      }
+
+                                  },Qt::QueuedConnection);
+    });
 }
 
 musicplayerpage::~musicplayerpage()
@@ -141,11 +155,9 @@ musicplayerpage::~musicplayerpage()
         delete model;
     }
     delete ui;
-
 }
+
 void musicplayerpage::ChangeGraphicView(QPoint pos)
 {
 
 }
-
-

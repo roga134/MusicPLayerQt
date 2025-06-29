@@ -2,16 +2,20 @@
 #define MYUDPSERVER_H
 
 #include <QObject>
-#include <QUdpSocket>
 #include <QSet>
 #include <QPair>
+#include <QTcpServer>
+#include <QTcpSocket>
 
-class MyUdpServer : public QObject
+class musicplayerpage;
+
+
+class MyTcpServer : public QObject
 {
     Q_OBJECT
 
 public:
-    explicit MyUdpServer(QObject *parent = nullptr);
+    explicit MyTcpServer(musicplayerpage *playerPage, QObject *parent = nullptr);
     bool startServer(quint16 port);
     void sendToAllClients(const QString &message);
     void sendToClient(const QHostAddress &address, quint16 port, const QString &message);
@@ -22,11 +26,15 @@ signals:
     void messageReceived(const QString &message, const QString &sender);
 
 private slots:
-    void onReadyRead();
+    void onReadyRead(QTcpSocket *clientSocket);
+    void onNewConnection();
+
 
 private:
-    QUdpSocket *udpSocket;
-    QSet<QPair<QHostAddress, quint16>> clients;
+    QTcpServer *tcpServer;
+    QSet<QTcpSocket*> clients;
+    musicplayerpage *musicplayerpagePtr = nullptr;
+    QHash<QTcpSocket*, bool> playlistSent;
 };
 
 #endif // MYUDPSERVER_H

@@ -32,7 +32,6 @@ SOURCES += \
     time.cpp \
     toolbar.cpp \
 
-
 HEADERS += \
     ClickableRectItem.h \
     chatmessagedelegate.h \

@@ -19,10 +19,12 @@ class musicplayerpage : public QMainWindow
 public:
    explicit musicplayerpage(QWidget *parent = nullptr);
     ~musicplayerpage();
+    QStringList getAllTrackNames() const;
 
 
 private slots:
     void on_pushButton_play_clicked();
+    void play_pause_network();
 
 
 //     void on_pushButton_stop_clicked();
@@ -116,8 +118,6 @@ private slots:
 
     void on_pushButton_client_clicked();
 
-    void handleplaybutton();
-
     void on_pushButton_chat_clicked();
 
     void addChatMessage(const QString &message, bool isMyMessage);
@@ -173,16 +173,17 @@ private:
     QStandardItemModel *logmodel = nullptr;
     void addLogMessage(const QString &msg);
 
-    MyUdpServer *udpServer;
-    MyUdpClient *udpClient;
+    MyTcpServer *tcpServer;
+    MyTcpClient *tcpClient;
     int is_server = 0;
+    QSet<QTcpSocket*> clients;
+    void handleplaybutton();
 
-     QPushButton *sendButton = nullptr;
-     QLineEdit *chatLineEdit = nullptr;
-     bool chatActive = false;
-     QStandardItemModel *chatModel =nullptr;
-     ChatMessageDelegate *chatDelegate;
-
+    QPushButton *sendButton = nullptr;
+    QLineEdit *chatLineEdit = nullptr;
+    bool chatActive = false;
+    QStandardItemModel *chatModel =nullptr;
+    ChatMessageDelegate *chatDelegate;
 };
 
 #endif

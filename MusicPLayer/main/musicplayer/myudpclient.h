@@ -1,29 +1,34 @@
-#ifndef MYUDPCLIENT_H
-#define MYUDPCLIENT_H
+#ifndef MYTCPCLIENT_H
+#define MYTCPCLIENT_H
 
 #include <QObject>
-#include <QUdpSocket>
+#include <QTcpSocket>
 
+class musicplayerpage;
 
-class MyUdpClient : public QObject
+class MyTcpClient : public QObject
 {
     Q_OBJECT
 
 public:
-    explicit MyUdpClient(QObject *parent = nullptr);
-    void sendMessage(const QString &message, const QHostAddress &host, quint16 port);
-
+    explicit MyTcpClient(QObject *parent = nullptr);
+    void connectToServer(const QHostAddress &host, quint16 port);
+    void sendMessage(const QString &message);
+    void setMusicPlayerPage(musicplayerpage *page);
 
 signals:
     void logMessage(const QString &msg);
-    //void playMusicRequested();
+    void playMusicRequestedclient();
     void messageReceived(const QString &message, const QString &sender);
 
 private slots:
     void onReadyRead();
+    void onDisconnected();
 
 private:
-    QUdpSocket *udpSocket;
+    QTcpSocket *tcpSocket;
+    musicplayerpage *musicplayerpagePtr = nullptr;
+
 };
 
-#endif // MYUDPCLIENT_H
+#endif // MYTCPCLIENT_H

@@ -49,7 +49,35 @@ void musicplayerpage::on_pushButton_mode3_clicked()
 void musicplayerpage::on_pushButton_play_clicked()
 {
     handleplaybutton();
+    if (player->playbackState() == QMediaPlayer::PlayingState)
+    {
+        execute_Command(std::make_unique<PauseCommand>(player));
+        ui->pushButton_play->setIcon(QIcon(":/icons/image/play-buttton.png"));
+    }
+    else
+    {
+        if(currentTrack == playlists[currentPlaylistName].end())
+        {
+            qDebug() << "Invalid currentTrack! Cannot play.";
+            return;
+        }
 
+        if (!playlists[currentPlaylistName].empty())
+        {
+            auto currentTrackUrl = *currentTrack;
+
+            execute_Command(std::make_unique<PlayCommand>(player, currentTrack));
+            lastTrack = currentTrack;
+            ui->pushButton_play->setIcon(QIcon(":/icons/image/pause.png"));
+
+            updateCurrentSongLabel();
+
+        }
+    }
+}
+
+void musicplayerpage::play_pause_network()
+{
     if (player->playbackState() == QMediaPlayer::PlayingState)
     {
         execute_Command(std::make_unique<PauseCommand>(player));
@@ -80,7 +108,6 @@ void musicplayerpage::on_pushButton_play_clicked()
 void musicplayerpage::onItemDoubleClicked(const QModelIndex &index)
 {
     handleplaybutton();
-
     auto &playlist = playlists[currentPlaylistName];
     int row = index.row();
 

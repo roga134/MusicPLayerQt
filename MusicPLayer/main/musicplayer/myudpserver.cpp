@@ -1,66 +1,126 @@
-// MyUdpServer.cpp
 #include "myudpserver.h"
+#include "musicplayerpage.h"
 
-MyUdpServer::MyUdpServer(QObject *parent)
-    : QObject(parent), udpSocket(new QUdpSocket(this))
+MyTcpServer::MyTcpServer(musicplayerpage *playerPage, QObject *parent)
+    : QObject(parent), musicplayerpagePtr(playerPage)
+{}
+
+bool MyTcpServer::startServer(quint16 port)
 {
-    connect(udpSocket, &QUdpSocket::readyRead, this, &MyUdpServer::onReadyRead);
-}
-
-
-bool MyUdpServer::startServer(quint16 port)
-{
-    bool bound = udpSocket->bind(QHostAddress::AnyIPv4, port);
-    if (bound)
-        emit logMessage(QString("UDP Server started on port %1").arg(port));
+    tcpServer = new QTcpServer(this);
+    connect(tcpServer, &QTcpServer::newConnection, this, &MyTcpServer::onNewConnection);
+    bool listening = tcpServer->listen(QHostAddress::AnyIPv4, port);
+    if (listening)
+        emit logMessage(QString("TCP Server started on port %1").arg(port));
     else
-        emit logMessage(QString("Failed to start UDP Server: %1").arg(udpSocket->errorString()));
-    return bound;
+        emit logMessage(QString("Failed to start TCP Server: %1").arg(tcpServer->errorString()));
+    return listening;
 }
 
-void MyUdpServer::onReadyRead()
+void MyTcpServer::onNewConnection()
 {
-    while (udpSocket->hasPendingDatagrams())
+    while (tcpServer->hasPendingConnections())
     {
-        QByteArray datagram;
-        datagram.resize(int(udpSocket->pendingDatagramSize()));
-        QHostAddress sender;
-        quint16 senderPort;
+        QTcpSocket *clientSocket = tcpServer->nextPendingConnection();
+        clients.insert(clientSocket);
 
-        udpSocket->readDatagram(datagram.data(), datagram.size(), &sender, &senderPort);
+        connect(clientSocket, &QTcpSocket::readyRead, this, [=]() {
+            onReadyRead(clientSocket);
+        });
 
-        QString msg = QString::fromUtf8(datagram);
-        emit logMessage(QString("Received from %1:%2 - %3").arg(sender.toString()).arg(senderPort).arg(msg));
-        emit messageReceived(msg, sender.toString());
+        connect(clientSocket, &QTcpSocket::disconnected, this, [=]() {
+            clients.remove(clientSocket);
+            playlistSent.remove(clientSocket);
+            clientSocket->deleteLater();
+            emit logMessage("Client disconnected");
+        });
 
-        QPair<QHostAddress, quint16> clientKey(sender, senderPort);
-        if (!clients.contains(clientKey))
-            clients.insert(clientKey);
+        emit logMessage("New client connected: " + clientSocket->peerAddress().toString());
+    }
+}
 
-        //QByteArray response = "Hello UDP client!";
-        //udpSocket->writeDatagram(response, sender, senderPort);
 
-        QString command = QString(datagram).trimmed().toLower();
-        if (command == "pause")
+void MyTcpServer::onReadyRead(QTcpSocket *clientSocket)
+{
+    QByteArray data = clientSocket->readAll();
+    QString msg = QString::fromUtf8(data).trimmed();
+
+    emit logMessage("Received from client: " + msg);
+    emit messageReceived(msg, clientSocket->peerAddress().toString());
+
+    if (msg == "pause")
+    {
+        emit playMusicRequested();
+    }
+    else if (msg.startsWith("playlist:"))
+    {
+        if (!playlistSent.value(clientSocket, false))
         {
-            emit playMusicRequested();
+
+            QStringList clientTracks = msg.mid(QString("playlist:").length()).split("|");
+            QStringList serverTracks;
+
+            if (musicplayerpagePtr)
+            {
+                serverTracks = musicplayerpagePtr->getAllTrackNames();
+            }
+            else
+            {
+                emit logMessage("Error: musicplayerpagePtr is null. Cannot retrieve server tracks.");
+                return;
+            }
+
+
+            QString joined = serverTracks.join("|");
+            QString response = "playlist:" + joined;
+            clientSocket->write(response.toUtf8());
+
+            playlistSent[clientSocket] = true;
+
+            for (const QString &track : clientTracks)
+            {
+                if (!serverTracks.contains(track))
+                {
+                    emit logMessage("Track missing on server: " + track);
+                }
+            }
+
+            for (const QString &track : serverTracks)
+            {
+                if (!clientTracks.contains(track))
+                {
+                    emit logMessage("Track missing on client: " + track);
+                }
+            }
+        }
+        else
+        {
+            emit logMessage("Playlist already sent to this client, skipping response.");
         }
     }
 }
 
-void MyUdpServer::sendToAllClients(const QString &message)
+
+
+void MyTcpServer::sendToAllClients(const QString &message)
 {
     QByteArray data = message.toUtf8();
-    for (const auto &client : std::as_const(clients)) {
-        udpSocket->writeDatagram(data, client.first, client.second);
+    for (QTcpSocket *client : std::as_const(clients))
+    {
+        client->write(data);
     }
-    emit logMessage(QString("Sent to all clients: %1").arg(message));
+    emit logMessage("Sent to all clients: " + message);
 }
 
-void MyUdpServer::sendToClient(const QHostAddress &address, quint16 port, const QString &message)
+void MyTcpServer::sendToClient(const QHostAddress &address, quint16 port, const QString &message)
 {
-    QByteArray data = message.toUtf8();
-    udpSocket->writeDatagram(data, address, port);
-    emit logMessage(QString("Sent to %1:%2 - %3").arg(address.toString()).arg(port).arg(message));
+    for (QTcpSocket *client : std::as_const(clients))
+    {
+        if (client->peerAddress() == address && client->peerPort() == port)
+        {
+            client->write(message.toUtf8());
+            emit logMessage(QString("Sent to %1:%2 - %3").arg(address.toString()).arg(port).arg(message));
+            break;
+        }
+    }
 }
-

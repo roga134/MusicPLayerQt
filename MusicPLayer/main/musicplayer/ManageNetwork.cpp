@@ -16,62 +16,70 @@ void musicplayerpage::addLogMessage(const QString &msg)
 
 void musicplayerpage::on_pushButton_server_clicked()
 {
-    if(is_server == 1)
-    {
-        addLogMessage("You have clicked this once");
-        return;
-    }
-    else if(is_server == 2)
-    {
-        addLogMessage("You are client");
-        return;
-    }
-    is_server = 1;
-
     ui->generalListView->setModel(logmodel);
-    udpServer->startServer(1234);
+    if (is_server == 1)
+    {
+        addLogMessage("you have clicked this button");
+        return;
+    }
+    else if (is_server == 2)
+    {
+        addLogMessage("you are client");
+        return;
+    }
+
+    is_server = 1;
+    tcpServer->startServer(1234);
 }
 
 void musicplayerpage::on_pushButton_client_clicked()
 {
-    if(is_server == 2)
+    ui->generalListView->setModel(logmodel);
+    if(is_server == 1)
     {
-        addLogMessage("You have clicked this once");
+        addLogMessage("you are server");
         return;
     }
-    else if(is_server == 1)
+    else if (is_server == 2)
     {
-        addLogMessage("You are server");
+        addLogMessage("you have clicked this button");
         return;
     }
     is_server = 2;
 
     ui->generalListView->setModel(logmodel);
-    udpClient->sendMessage("Hello UDP Server!", QHostAddress("127.0.0.1"), 1234);
+    tcpClient->connectToServer(QHostAddress("127.0.0.1"), 1234);
 }
+
 
 void musicplayerpage::handleplaybutton()
 {
-    if(is_server == 0)
+    if (is_server == 1)
     {
-        return;
+        tcpServer->sendToAllClients("pause");
+        addLogMessage("Sent 'pause' to all clients");
     }
-    else if (is_server == 1)
+    else if (is_server == 2)
     {
-        udpServer->sendToClient(QHostAddress("127.0.0.1") , 1234,  "pause");
-        addLogMessage("Sent 'pause' message to client");
-
-        return;
-    }
-    else
-    {
-        QString message = "pause";
-        QHostAddress serverAddress = QHostAddress("127.0.0.1");
-        quint16 port = 1234;
-        udpClient->sendMessage(message, serverAddress, port);
-        return;
+        tcpClient->sendMessage("pause");
     }
 }
+
+QStringList musicplayerpage::getAllTrackNames() const
+{
+    QStringList trackNames;
+    for (auto model : playlistModels)
+    {
+        for (int row = 0; row < model->rowCount(); ++row)
+        {
+            QStandardItem *item = model->item(row);
+            if (item)
+                trackNames << item->text();
+        }
+    }
+    return trackNames;
+}
+
 void musicplayerpage::on_pushButton_chat_clicked()
 {
     if(is_server == 0)
@@ -84,8 +92,8 @@ void musicplayerpage::on_pushButton_chat_clicked()
 
     if (chatActive)
     {
-         chatLineEdit->hide();
-         sendButton->hide();
+        chatLineEdit->hide();
+        sendButton->hide();
         chatActive = false;
         ui->generalListView->setModel(logmodel);
         return;
@@ -155,13 +163,13 @@ void musicplayerpage::on_pushButton_chat_clicked()
             addChatMessage(message, true);
             chatLineEdit->clear();
 
-            if(is_server == 1)
+            if (is_server == 1)
             {
-                udpServer->sendToAllClients(message);
+                tcpServer->sendToAllClients(message);
             }
             else
             {
-                udpClient->sendMessage(message, QHostAddress("127.0.0.1"), 1234);
+                tcpClient->sendMessage(message);
             }
         }
     });
@@ -175,8 +183,12 @@ void musicplayerpage::addChatMessage(const QString &message, bool isMyMessage)
 
     // استایل حباب پیام
     QString style;
-    if(isMyMessage) {style = "background-color: #ADD8E6; border-radius: 12px; padding: 8px 12px;";
-    } else {
+    if(isMyMessage)
+    {
+        style = "background-color: #ADD8E6; border-radius: 12px; padding: 8px 12px;";
+    }
+    else
+    {
         style = "background-color: #FFFFFF; border-radius: 12px; padding: 8px 12px; border: 1px solid #E5E5EA;";
     }
 
