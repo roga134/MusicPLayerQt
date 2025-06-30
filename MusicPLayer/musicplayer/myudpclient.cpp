@@ -15,29 +15,25 @@ void MyTcpClient::connectToServer(const QHostAddress &host, quint16 port)
 
     connect(tcpSocket, &QTcpSocket::connected, this, [=]() {
         emit logMessage("Connected to server.");
-
         if (musicplayerpagePtr)
         {
-            QStringList tracks = musicplayerpagePtr->getAllTrackNames();
-            QString message = "playlist:" + tracks.join("|");
-            sendMessage(message);
+            QString myUsername = musicplayerpagePtr->GetUserName();
+            tcpSocket->write(myUsername.toUtf8());
         }
     });
 }
 
 void MyTcpClient::sendMessage(const QString &message)
 {
-
-        if (tcpSocket->state() == QAbstractSocket::ConnectedState)
-        {
-            tcpSocket->write(message.toUtf8());
-            emit logMessage(QString("Sent: %1").arg(message));
-        }
-        else
-        {
-            emit logMessage("Cannot send: not connected to server.");
-        }
-
+    if (tcpSocket->state() == QAbstractSocket::ConnectedState)
+    {
+        tcpSocket->write(message.toUtf8());
+        emit logMessage(QString("Sent: %1").arg(message));
+    }
+    else
+    {
+        emit logMessage("Cannot send: not connected to server.");
+    }
 }
 
 void MyTcpClient::onReadyRead()
@@ -45,38 +41,53 @@ void MyTcpClient::onReadyRead()
     QByteArray data = tcpSocket->readAll();
     QString msg = QString::fromUtf8(data).trimmed();
 
-    emit logMessage("Received: " + msg);
-    emit messageReceived(msg, tcpSocket->peerAddress().toString());
-
-    if (msg == "pause")
+    if (serveruser.isEmpty())
     {
-        emit playMusicRequestedclient();
+        serveruser = msg;
+        emit logMessage("Server username set to: " + serveruser);
+        return;
     }
 
-    else if (msg.startsWith("playlist:"))
+    int sepIndex = msg.indexOf(": ");
+    if (sepIndex != -1) {
+        QString sender = msg.left(sepIndex);
+        QString message = msg.mid(sepIndex + 2);
+
+        emit logMessage(sender + ": " + message);
+        emit messageReceived(message, sender);
+    }
+    else
     {
-        QStringList serverTracks = msg.mid(QString("playlist:").length()).split("|");
-        QStringList clientTracks = musicplayerpagePtr->getAllTrackNames();
+        emit logMessage(msg);
+        emit messageReceived(msg, serveruser);
 
-        for (const QString &track : clientTracks)
+        if (msg == "pause")
         {
-            if (!serverTracks.contains(track))
-            {
-                emit logMessage("Track missing on server: " + track);
-            }
+            emit playMusicRequestedclient();
         }
-
-        for (const QString &track : serverTracks)
+        else if (msg.startsWith("playlist:"))
         {
-            if (!clientTracks.contains(track))
+            QStringList serverTracks = msg.mid(QString("playlist:").length()).split("|");
+            QStringList clientTracks = musicplayerpagePtr->getAllTrackNames();
+
+            for (const QString &track : clientTracks)
             {
-                emit logMessage("Track missing on client: " + track);
+                if (!serverTracks.contains(track))
+                {
+                    emit logMessage("Track missing on server: " + track);
+                }
+            }
+
+            for (const QString &track : serverTracks)
+            {
+                if (!clientTracks.contains(track))
+                {
+                    emit logMessage("Track missing on client: " + track);
+                }
             }
         }
     }
 }
-
-
 
 void MyTcpClient::onDisconnected()
 {
@@ -85,12 +96,13 @@ void MyTcpClient::onDisconnected()
 
 void MyTcpClient::setMusicPlayerPage(musicplayerpage *page)
 {
+    musicplayerpagePtr = page;
     try{
         if(!page)
         {
             throw std::runtime_error("Null pointer passed to setMusicPlayerPage");
         }
-          musicplayerpagePtr = page;
+        musicplayerpagePtr = page;
     }catch(const std::exception &e)
     {
         emit logMessage("Error setting music player page");
@@ -100,6 +112,4 @@ void MyTcpClient::setMusicPlayerPage(musicplayerpage *page)
         emit logMessage("Unknow error setting music player page");
 
     }
-
-
 }

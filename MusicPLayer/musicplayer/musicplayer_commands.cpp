@@ -28,7 +28,7 @@ void PlayCommand::undo()
 
 QString PlayCommand::description() const
 {
-    return  "Play: ";
+    return  "Play: " ;
 }
 
 
@@ -82,12 +82,12 @@ std::list<QUrl>::iterator AddTrackCommand::executeWithResult()
 
 void AddTrackCommand::undo()
 {
-
-    if (!playlist.empty()) {
+    if (!playlist.empty())
+    {
         playlist.pop_back();
     }
-
-    if (model.contains(key)) {
+    if (model.contains(key))
+    {
         QStandardItemModel* playlistModel = model[key];
         if (playlistModel && playlistModel->rowCount() > 0)
         {
@@ -130,23 +130,21 @@ void RemoveTrackCommand::execute()
 
 void RemoveTrackCommand::undo()
 {
-     auto it = playlist.begin();
+    auto it = playlist.begin();
     std::advance(it, pos);
     playlist.insert(it, *track);
 
     if (model.contains(key))
     {
-         QStandardItemModel* playlistModel = model[key];
+        QStandardItemModel* playlistModel = model[key];
         if (playlistModel)
         {
-                QStandardItem* item = new QStandardItem(track->fileName());
-                item->setData(track->toString(), Qt::UserRole);
-                playlistModel->insertRow(pos, item);
+            QStandardItem* item = new QStandardItem(track->fileName());
+            item->setData(track->toString(), Qt::UserRole);
+            playlistModel->insertRow(pos, item);
         }
     }
-
 }
-
 
 QString RemoveTrackCommand::description() const
 {

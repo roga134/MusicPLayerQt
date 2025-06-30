@@ -21,6 +21,25 @@ void musicplayerpage::on_pushButton_server_clicked()
     sendButton->hide();
     chatActive = false;
 
+    ui->generalListView->setStyleSheet(
+        "QListView {"
+        "   background-color: #f8f9fa;"
+        "   border: 1px solid #dee2e6;"
+        "   border-radius: 8px;"
+        "   padding: 5px;"
+        "   font-family: 'Segoe UI', Arial, sans-serif;"
+        "}"
+        "QListView::item {"
+        "   padding: 8px 12px;"
+        "   border-radius: 12px;"
+        "   margin: 4px 0;"
+        "   font-size: 14px;"
+        "}"
+        "QListView::item:hover {"
+        "   background-color: #e9ecef;"
+        "}"
+        );
+
     ui->generalListView->setModel(logmodel);
     if (is_server == 1)
     {
@@ -43,6 +62,25 @@ void musicplayerpage::on_pushButton_client_clicked()
     chatLineEdit->hide();
     sendButton->hide();
     chatActive = false;
+
+    ui->generalListView->setStyleSheet(
+        "QListView {"
+        "   background-color: #f8f9fa;"
+        "   border: 1px solid #dee2e6;"
+        "   border-radius: 8px;"
+        "   padding: 5px;"
+        "   font-family: 'Segoe UI', Arial, sans-serif;"
+        "}"
+        "QListView::item {"
+        "   padding: 8px 12px;"
+        "   border-radius: 12px;"
+        "   margin: 4px 0;"
+        "   font-size: 14px;"
+        "}"
+        "QListView::item:hover {"
+        "   background-color: #e9ecef;"
+        "}"
+        );
 
 
     ui->generalListView->setModel(logmodel);
@@ -228,7 +266,8 @@ void musicplayerpage::addChatMessage(const QString &message, bool isMyMessage)
 
     if(isMyMessage) {
         item->setBackground(QBrush(QColor(220, 248, 203))); // سبز آبی بسیار روشن
-    } else {
+    } else
+    {
         item->setBackground(QBrush(QColor(255, 255, 255))); // سفید
     }
 

@@ -25,6 +25,8 @@ musicplayerpage::musicplayerpage(QWidget *parent)
     ui->label_remaning->setText("00:00");
     ui->tabWidget->setTabText(countPlaylist, QString::fromStdString("PlayList " + std::to_string(countPlaylist + 1)));
 
+    settoolbar();
+
 
     ClickableGraphicsView* newView = new ClickableGraphicsView(this);
     ui->horizontalLayout->replaceWidget(ui->graphicsView, newView);
@@ -134,6 +136,8 @@ musicplayerpage::musicplayerpage(QWidget *parent)
 
                                   },Qt::QueuedConnection);
     });
+
+    this->installEventFilter(this);
 }
 
 musicplayerpage::~musicplayerpage()
@@ -168,4 +172,3 @@ void musicplayerpage::on_actionUndo_triggered()
 
 
 }
-

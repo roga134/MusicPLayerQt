@@ -68,6 +68,7 @@ void LogIn::on_pushButton_enter_clicked()
         return ;
     }
 
+
     QTextStream in(&file);
     char key = 0x5A;
 
@@ -90,7 +91,6 @@ void LogIn::on_pushButton_enter_clicked()
             QString path = QCoreApplication::applicationDirPath() + "/../musicplayer/musicplayer";
             #ifdef Q_OS_WIN
                 path = QCoreApplication::applicationDirPath() +"/../../musicplayer/debug/musicplayer.exe";
-
             #endif
 
             QString decryptedFirstName = simpleXOREncryptDecrypt(QByteArray::fromHex(fields[0].toUtf8()), key);

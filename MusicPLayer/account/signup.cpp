@@ -127,21 +127,21 @@ void SignUp::on_pushButton_login_clicked()
 void SignUp::resizeEvent(QResizeEvent *event)
 {
     try {
+        QMainWindow::resizeEvent(event);
 
-    QMainWindow::resizeEvent(event);
-
-    if (background)
-    {
-        background->setGeometry(0, 0, this->width(), this->height());
-
-        QPixmap pixmap(":/new/image1/image.jpg");
-        if(pixmap.isNull())
+        if (background)
         {
-            throw std::runtime_error("Failed to load background image");
+            background->setGeometry(0, 0, this->width(), this->height());
+
+            QPixmap pixmap(":/new/image1/image.jpg");
+            if(pixmap.isNull())
+            {
+                throw std::runtime_error("Failed to load background image");
+            }
+            background->setPixmap(pixmap.scaled(this->size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
         }
-        background->setPixmap(pixmap.scaled(this->size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
     }
-    }catch(const std::exception& e)
+    catch(const std::exception& e)
     {
         qWarning() << "Resize event error :"<<e.what();
     }

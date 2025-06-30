@@ -59,7 +59,7 @@ void menu::on_pushButton_logIn_clicked()
         login = new LogIn(this);
         login->show();
     }catch(const std::exception& e){
-       QMessageBox::critical(this,"window Error","Failed to create login window ");
+        QMessageBox::critical(this,"window Error","Failed to create login window ");
     }
 }
 

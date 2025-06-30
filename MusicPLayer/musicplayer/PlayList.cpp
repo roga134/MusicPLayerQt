@@ -231,8 +231,6 @@ void musicplayerpage::renamePlaylistTab(int index)
     {
         QMessageBox::warning(this,"Error",QString(e.what()));
     }
-
-
 }
 
 void musicplayerpage::showContextMenu(const QPoint &pos)
@@ -304,8 +302,6 @@ void musicplayerpage::addToQueueFromListView(QListView *listView, const QModelIn
         QMessageBox::critical(this,"Error","Failed to add to queue");
 
     }
-
-
 }
 
 

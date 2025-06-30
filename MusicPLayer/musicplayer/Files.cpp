@@ -35,8 +35,6 @@ void musicplayerpage::on_actionopen_file_triggered()
     {
         QMessageBox::critical(this, "Error", QString("Failed to open files: %1").arg(e.what()));
     }
-
-
 }
 
 void musicplayerpage::on_pushButton_files_clicked()
@@ -103,9 +101,6 @@ void musicplayerpage::on_pushButton_home_clicked()
     catch (const std::exception& e) {
         QMessageBox::warning(this, "Navigation Error", e.what());
     }
-
-
-
 }
 
 void musicplayerpage::on_pushButton_forward_clicked()
@@ -121,11 +116,9 @@ void musicplayerpage::on_pushButton_forward_clicked()
             }
             ui->generalListView->setRootIndex(next);
 
-    }        }catch (const std::exception& e) {
+        }        }catch (const std::exception& e) {
         QMessageBox::warning(this, "Navigation Error", e.what());
     }
-
-
 }
 
 void musicplayerpage::on_pushButton_back_clicked()

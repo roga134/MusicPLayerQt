@@ -226,7 +226,7 @@ void musicplayerpage::on_actionRemove_Track_triggered()
     QListView *listView = new QListView(this);
     listView = listsong[indexPlaylist];
 
-   try
+    try
     {
         QModelIndex index = listView->currentIndex();
         if (!index.isValid() ||!listView)
@@ -296,10 +296,10 @@ void musicplayerpage::on_actionRemove_Track_triggered()
         listView->setModel(playlistModels[matchedPlaylistName]);
 
 
-   }catch(const std::exception& e)
-   {
-       qDebug() << "Error in removing track:" <<e.what();
-   }
+    }catch(const std::exception& e)
+    {
+        qDebug() << "Error in removing track:" <<e.what();
+    }
 }
 
 

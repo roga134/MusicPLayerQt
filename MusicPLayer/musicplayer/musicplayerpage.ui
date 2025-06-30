@@ -378,6 +378,7 @@
      </property>
      <addaction name="actionDon_t_repeat"/>
      <addaction name="actionrepeat_trak"/>
+     <addaction name="actionrepeat_playlist"/>
     </widget>
     <addaction name="actionRemove_Track"/>
     <addaction name="separator"/>
@@ -440,7 +441,7 @@
   </action>
   <action name="actionDon_t_repeat">
    <property name="text">
-    <string>Don't repeat</string>
+    <string>Don't repeat playlist</string>
    </property>
   </action>
   <action name="actionrepeat_trak">
@@ -470,7 +471,12 @@
   </action>
   <action name="actionexit_2">
    <property name="text">
-    <string>exit</string>
+    <string>Quit</string>
+   </property>
+  </action>
+  <action name="actionrepeat_playlist">
+   <property name="text">
+    <string>repeat playlist</string>
    </property>
   </action>
  </widget>

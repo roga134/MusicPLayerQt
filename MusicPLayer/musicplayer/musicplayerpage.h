@@ -21,10 +21,13 @@ public:
     ~musicplayerpage();
     QStringList getAllTrackNames() const;
     void setinformation(QString firstName,QString lastName,QString username,QString email);
+    QString GetUserName(){return username;}
 
 private slots:
     void on_pushButton_play_clicked();
+
     void play_pause_network();
+
 
     void on_positionChanged(qint64 position);
 
@@ -32,15 +35,15 @@ private slots:
 
     void on_mediaStatusChanged(QMediaPlayer::MediaStatus status);
 
-     void on_actionAdd_Track_triggered();
+    void on_actionAdd_Track_triggered();
 
     void on_pushButton_prev_clicked();
 
-     void on_pushButton_next_clicked();
+    void on_pushButton_next_clicked();
 
     void on_actionRemove_Track_triggered();
 
-     void on_pushButton_mute_clicked();
+    void on_pushButton_mute_clicked();
 
     void on_volum_valueChanged(int value);
 
@@ -110,6 +113,8 @@ private slots:
 
     void on_actionUndo_triggered();
 
+    void settoolbar();
+
 private:
     Ui::musicplayerpage *ui;
     QMediaPlayer *player;
@@ -174,6 +179,9 @@ private:
     QString firstName, lastName, username, email;
     ChatMessageDelegate *infotDelegate;
     QStandardItemModel *infotModel ;
+
+    void keyPressEvent(QKeyEvent *event);
+    bool ctrlMPressed = false;
 };
 
 #endif

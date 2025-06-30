@@ -77,8 +77,6 @@ void ForgetPass::on_pushButton_Done_clicked()
         return ;
     }
 
-
-
     QTextStream in(&file);
     char key = 0x5A;
 

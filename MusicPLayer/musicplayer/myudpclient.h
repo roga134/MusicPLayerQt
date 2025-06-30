@@ -28,6 +28,7 @@ private slots:
 private:
     QTcpSocket *tcpSocket;
     musicplayerpage *musicplayerpagePtr = nullptr;
+    QString serveruser = "";
 
 };
 

@@ -3,124 +3,112 @@
 
 MyTcpServer::MyTcpServer(musicplayerpage *playerPage, QObject *parent)
     : QObject(parent), musicplayerpagePtr(playerPage)
-{}
+{
+    tcpServer = new QTcpServer(this);
+
+    connect(tcpServer, &QTcpServer::newConnection, this, &MyTcpServer::onNewConnection);
+}
 
 bool MyTcpServer::startServer(quint16 port)
 {
-    tcpServer = new QTcpServer(this);
-    connect(tcpServer, &QTcpServer::newConnection, this, &MyTcpServer::onNewConnection);
-    bool listening = tcpServer->listen(QHostAddress::AnyIPv4, port);
-    if (listening)
-        emit logMessage(QString("TCP Server started on port %1").arg(port));
-    else
-        emit logMessage(QString("Failed to start TCP Server: %1").arg(tcpServer->errorString()));
-    return listening;
+    if (!tcpServer->listen(QHostAddress::Any, port)) {
+        emit logMessage("Server failed to start.");
+        return false;
+    }
+
+    emit logMessage(QString("Server started on port %1").arg(port));
+    return true;
 }
 
 void MyTcpServer::onNewConnection()
 {
-    while (tcpServer->hasPendingConnections())
-    {
-        QTcpSocket *clientSocket = tcpServer->nextPendingConnection();
-        clients.insert(clientSocket);
+    QTcpSocket *clientSocket = tcpServer->nextPendingConnection();
+    clients.insert(clientSocket);
 
-        connect(clientSocket, &QTcpSocket::readyRead, this, [=]() {
-            onReadyRead(clientSocket);
-        });
+    connect(clientSocket, &QTcpSocket::readyRead, this, [=]() {
+        onReadyRead(clientSocket);
+    });
 
-        connect(clientSocket, &QTcpSocket::disconnected, this, [=]() {
-            clients.remove(clientSocket);
-            playlistSent.remove(clientSocket);
-            clientSocket->deleteLater();
-            emit logMessage("Client disconnected");
-        });
+    connect(clientSocket, &QTcpSocket::disconnected, this, [=]() {
+        clients.remove(clientSocket);
+        emit logMessage("Client disconnected.");
+    });
 
-        emit logMessage("New client connected: " + clientSocket->peerAddress().toString());
+    if (musicplayerpagePtr) {
+        QString myUsername = musicplayerpagePtr->GetUserName();
+        clientSocket->write(myUsername.toUtf8());
     }
+
+    emit logMessage("New client connected.");
 }
 
 
 void MyTcpServer::onReadyRead(QTcpSocket *clientSocket)
 {
+    if (!clientSocket)
+        return;
+
     QByteArray data = clientSocket->readAll();
-    QString msg = QString::fromUtf8(data).trimmed();
+    QString message = QString::fromUtf8(data).trimmed();
 
-    emit logMessage("Received from client: " + msg);
-    emit messageReceived(msg, clientSocket->peerAddress().toString());
-
-    if (msg == "pause")
-    {
-        emit playMusicRequested();
+    if (!clientUsernames.contains(clientSocket)) {
+        clientUsernames[clientSocket] = message;
+        emit logMessage("New user registered: " + message);
     }
-    else if (msg.startsWith("playlist:"))
+    else
     {
-        if (!playlistSent.value(clientSocket, false))
+        QString username = clientUsernames[clientSocket];
+        emit messageReceived(message, username);
+
+        for (QTcpSocket* otherClient : clients)
         {
-
-            QStringList clientTracks = msg.mid(QString("playlist:").length()).split("|");
-            QStringList serverTracks;
-
-            if (musicplayerpagePtr)
+            if (otherClient != clientSocket && otherClient->state() == QAbstractSocket::ConnectedState)
             {
-                serverTracks = musicplayerpagePtr->getAllTrackNames();
-            }
-            else
-            {
-                emit logMessage("Error: musicplayerpagePtr is null. Cannot retrieve server tracks.");
-                return;
-            }
-
-
-            QString joined = serverTracks.join("|");
-            QString response = "playlist:" + joined;
-            clientSocket->write(response.toUtf8());
-
-            playlistSent[clientSocket] = true;
-
-            for (const QString &track : clientTracks)
-            {
-                if (!serverTracks.contains(track))
-                {
-                    emit logMessage("Track missing on server: " + track);
-                }
-            }
-
-            for (const QString &track : serverTracks)
-            {
-                if (!clientTracks.contains(track))
-                {
-                    emit logMessage("Track missing on client: " + track);
-                }
+                QString forwardMessage = username + ": " + message;
+                otherClient->write(forwardMessage.toUtf8());
             }
         }
-        else
+
+        if (message == "pause")
         {
-            emit logMessage("Playlist already sent to this client, skipping response.");
-        }
+            emit playMusicRequested();
+        }/*
+        else if (message.startsWith("playlist:"))
+        {
+            QStringList tracks = message.mid(QString("playlist:").length()).split("|");
+
+            // مثال: ثبت لیست آهنگ کلاینت
+            emit logMessage("Received playlist from " + username + ": " + tracks.join(", "));
+        }*/
     }
 }
 
+void MyTcpServer::onDisconnected()
+{
+    QTcpSocket *clientSocket = qobject_cast<QTcpSocket *>(sender());
+    if (!clientSocket)
+        return;
 
+    clients.remove(clientSocket);
+    QString username = clientUsernames.value(clientSocket, "Unknown");
+    clientUsernames.remove(clientSocket);
+
+    emit logMessage("Client disconnected: " + username);
+    clientSocket->deleteLater();
+}
 
 void MyTcpServer::sendToAllClients(const QString &message)
 {
-    QByteArray data = message.toUtf8();
-    for (QTcpSocket *client : std::as_const(clients))
-    {
-        client->write(data);
+    for (QTcpSocket *client : clients) {
+        if (client->state() == QAbstractSocket::ConnectedState) {
+            client->write(message.toUtf8());
+        }
     }
-    emit logMessage("Sent to all clients: " + message);
 }
 
-void MyTcpServer::sendToClient(const QHostAddress &address, quint16 port, const QString &message)
+void MyTcpServer::sendToClient(QTcpSocket *client, const QString &message)
 {
-    for (QTcpSocket *client : std::as_const(clients))
-    {
-        if (client->peerAddress() == address && client->peerPort() == port)
-        {
-            client->write(message.toUtf8());
-            emit logMessage(QString("Sent to %1:%2 - %3").arg(address.toString()).arg(port).arg(message));
-            break;
-        }
+    if (client && client->state() == QAbstractSocket::ConnectedState) {
+        client->write(message.toUtf8());
     }
 }
