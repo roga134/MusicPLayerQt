@@ -81,7 +81,7 @@ void LogIn::on_pushButton_enter_clicked()
         if (decryptedUsername == inputUsername && storedPassHash == inputPassHash)
         {
             QMessageBox::information(this, "Welcome", "Login Successful");
-            QString path = QCoreApplication::applicationDirPath() + "/../musicplayer/musicplayer";
+            QString path = QCoreApplication::applicationDirPath() + "/musicplayer";
             #ifdef Q_OS_WIN
                 path = QCoreApplication::applicationDirPath() + "../musicplayer/release/musicplayer.exe";
             #endif
