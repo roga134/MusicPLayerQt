@@ -181,9 +181,8 @@ private:
     bool chatActive = false;
     QStandardItemModel *chatModel =nullptr;
     ChatMessageDelegate *chatDelegate;
-    QWidget* chatContainer;
     QVBoxLayout *mainLayout;
-    QHBoxLayout * inputLayput;
+    QHBoxLayout * inputLayout;
 
     QString firstName, lastName, username, email;
     ChatMessageDelegate *infotDelegate;

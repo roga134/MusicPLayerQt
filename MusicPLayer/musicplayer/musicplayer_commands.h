@@ -50,6 +50,7 @@
 #include "ClickableRectItem.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
+#include <QSpacerItem>
 
 enum RepeatMode
 {

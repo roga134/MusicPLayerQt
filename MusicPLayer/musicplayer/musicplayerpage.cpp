@@ -24,6 +24,10 @@ musicplayerpage::musicplayerpage(QWidget *parent)
     ui->label_played->setText("00:00");
     ui->label_remaning->setText("00:00");
     ui->tabWidget->setTabText(countPlaylist, QString::fromStdString("PlayList " + std::to_string(countPlaylist + 1)));
+    ui->centralwidget->setStyleSheet("background-color: #EAECEE;");
+    ui->generalListView->setStyleSheet("background-color: #FFFFFF;");
+    ui->tabWidget->setStyleSheet("background-color: #D6EAF8;");
+    ui->generalListView->setStyleSheet("background-color: #FFFFFF;");
 
     settoolbar();
 
@@ -89,7 +93,6 @@ musicplayerpage::musicplayerpage(QWidget *parent)
     connect(tcpClient, &MyTcpClient::playMusicRequestedclient,this, &musicplayerpage::play_pause_network);
 
     chatDelegate = new ChatMessageDelegate(this);
-
     chatModel = new QStandardItemModel(this);
     chatLineEdit = new QLineEdit(this);
     chatLineEdit->setPlaceholderText("Enter your massage");
@@ -98,17 +101,26 @@ musicplayerpage::musicplayerpage(QWidget *parent)
     sendButton->hide();
 
     mainLayout = new QVBoxLayout(ui->generalListView);
+    mainLayout->setContentsMargins(5,5,5,5);
+    mainLayout->setSpacing(10);
     mainLayout->addWidget(ui->generalListView);
+    mainLayout->addStretch(1);
 
-   inputLayput = new QHBoxLayout;
+    QWidget* Container = new QWidget(this);
+    QWidget* inputwiget = new QWidget(Container);
+    inputLayout = new QHBoxLayout(inputwiget);
+    inputLayout->setContentsMargins(0,0,0,0);
+
     chatLineEdit->setSizePolicy(QSizePolicy::Expanding ,QSizePolicy::Fixed);
     chatLineEdit->setFixedHeight(30);
 
     sendButton->setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Fixed);
     sendButton->setFixedSize(60,30);
-    inputLayput->addWidget(chatLineEdit);
-    inputLayput->addWidget(sendButton);
-    mainLayout->addLayout(inputLayput);
+
+    inputLayout->addWidget(chatLineEdit);
+    inputLayout->addWidget(sendButton);
+    mainLayout->addWidget(inputwiget);
+
 
     connect(tcpServer, &MyTcpServer::messageReceived, this, [this](const QString &msg, const QString &sender) {
         QMetaObject::invokeMethod(this,[this,msg,sender]()
