@@ -25,6 +25,11 @@ void musicplayerpage::on_actionopen_file_triggered()
 
 void musicplayerpage::on_pushButton_files_clicked()
 {
+    ui->generalListView->setStyleSheet("");
+    chatLineEdit->hide();
+    sendButton->hide();
+    chatActive = false;
+
     ui->generalListView->setModel(playlistModels[currentPlaylistName]);
     ui->generalListView->setSelectionMode(QAbstractItemView::SingleSelection);
     ui->generalListView->setSelectionBehavior(QAbstractItemView::SelectRows);

@@ -44,6 +44,7 @@
 #include <QTcpSocket>
 #include <QTcpServer>
 #include <QThread>
+#include <QHeaderView>
 #include "ClickableRectItem.h"
 
 enum RepeatMode

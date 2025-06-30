@@ -100,20 +100,7 @@ musicplayerpage::musicplayerpage(QWidget *parent)
     QHBoxLayout * inputLayput = new QHBoxLayout;
     chatLineEdit->setSizePolicy(QSizePolicy::Expanding ,QSizePolicy::Fixed);
     chatLineEdit->setFixedHeight(30);
-    /*
-    QHBoxLayout *inputLayout = new QHBoxLayout();
-    inputLayout->addWidget(messageInput);
-    inputLayout->addWidget(sendMessageButton);
-    inputLayout->setStretch(0, 1);
 
-    QVBoxLayout *networkLayout = new QVBoxLayout(networkTab);
-    QScrollArea *scrollArea = new QScrollArea();
-    scrollArea->setWidgetResizable(true);
-    scrollArea->setWidget(chatDisplay);
-    networkLayout->addWidget(scrollArea);
-    networkLayout->setStretch(0, 1);
-    networkLayout->addLayout(inputLayout);
-    */
     sendButton->setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Fixed);
     sendButton->setFixedSize(60,30);
     inputLayput->addWidget(chatLineEdit);
