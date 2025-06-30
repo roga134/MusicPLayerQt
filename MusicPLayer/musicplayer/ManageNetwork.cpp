@@ -16,6 +16,11 @@ void musicplayerpage::addLogMessage(const QString &msg)
 
 void musicplayerpage::on_pushButton_server_clicked()
 {
+    ui->generalListView->setStyleSheet("");
+    chatLineEdit->hide();
+    sendButton->hide();
+    chatActive = false;
+
     ui->generalListView->setModel(logmodel);
     if (is_server == 1)
     {
@@ -34,6 +39,12 @@ void musicplayerpage::on_pushButton_server_clicked()
 
 void musicplayerpage::on_pushButton_client_clicked()
 {
+    ui->generalListView->setStyleSheet("");
+    chatLineEdit->hide();
+    sendButton->hide();
+    chatActive = false;
+
+
     ui->generalListView->setModel(logmodel);
     if(is_server == 1)
     {
@@ -82,6 +93,10 @@ QStringList musicplayerpage::getAllTrackNames() const
 
 void musicplayerpage::on_pushButton_chat_clicked()
 {
+    ui->generalListView->setStyleSheet("");
+    ui->generalListView->setModel(nullptr);
+    ui->generalListView->setItemDelegate(nullptr);
+
     if(is_server == 0)
     {
         QMessageBox::warning(this,"Connection Error","You must connect as server/client first!");
@@ -154,7 +169,23 @@ void musicplayerpage::on_pushButton_chat_clicked()
     sendButton->show();
 
 
+    connect(chatLineEdit, &QLineEdit::returnPressed, this, [this]() {
+        QString message = chatLineEdit->text().trimmed();
+        if (!message.isEmpty())
+        {
+            addChatMessage(message, true);
+            chatLineEdit->clear();
 
+            if (is_server == 1)
+            {
+                tcpServer->sendToAllClients(message);
+            }
+            else
+            {
+                tcpClient->sendMessage(message);
+            }
+        }
+    });
 
     connect(sendButton, &QPushButton::clicked, this, [this]() {
         QString message = chatLineEdit->text().trimmed();

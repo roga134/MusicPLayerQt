@@ -21,6 +21,12 @@ ForgetPass::ForgetPass(QWidget *parent) :
     this->setFont(font);
     ui->pushButton_Done->setFont(font);
     ui->pushButton_back->setFont(font);
+
+    connect(ui->lineEdit_Pass, &QLineEdit::returnPressed, this, &ForgetPass::on_pushButton_Done_clicked);
+    connect(ui->lineEdit_confPass, &QLineEdit::returnPressed, this, &ForgetPass::on_pushButton_Done_clicked);
+    connect(ui->lineEdit_secure, &QLineEdit::returnPressed, this, &ForgetPass::on_pushButton_Done_clicked);
+    connect(ui->lineEdit_username, &QLineEdit::returnPressed, this, &ForgetPass::on_pushButton_Done_clicked);
+
 }
 
 ForgetPass::~ForgetPass()

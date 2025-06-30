@@ -16,9 +16,11 @@ void musicplayerpage::on_actionnext_trak_triggered()
     this->on_pushButton_next_clicked();
 }
 
-void musicplayerpage::on_actionexit_triggered()
+void musicplayerpage::on_actionexit_2_triggered()
 {
-    QApplication::quit();
+    qApp->quit();
+    QCoreApplication::exit(0);
+    this->close();
 }
 
 void musicplayerpage::on_actionDon_t_shuffel_triggered()

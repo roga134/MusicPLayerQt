@@ -65,6 +65,9 @@ musicplayerpage::musicplayerpage(QWidget *parent)
         connect(view, &ClickableGraphicsView::clicked, this, &musicplayerpage::ChangeGraphicView);
     }
 
+    infotDelegate = new ChatMessageDelegate(this);
+    infotModel = new QStandardItemModel(this);
+
     logmodel = new QStandardItemModel(this);
 
     tcpServer = new MyTcpServer(this);

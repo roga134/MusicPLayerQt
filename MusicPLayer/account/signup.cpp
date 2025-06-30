@@ -21,6 +21,14 @@ SignUp::SignUp(QWidget *parent) :
     this->setFont(font);
     ui->pushButton_back->setFont(font);
     ui->pushButton_login->setFont(font);
+
+    connect(ui->lineEdit_FirstName, &QLineEdit::returnPressed, this, &SignUp::on_pushButton_login_clicked);
+    connect(ui->lineEdit_LastName, &QLineEdit::returnPressed, this, &SignUp::on_pushButton_login_clicked);
+    connect(ui->lineEdit_UserName, &QLineEdit::returnPressed, this, &SignUp::on_pushButton_login_clicked);
+    connect(ui->lineEdit_Pass, &QLineEdit::returnPressed, this, &SignUp::on_pushButton_login_clicked);
+    connect(ui->lineEdit_Email, &QLineEdit::returnPressed, this, &SignUp::on_pushButton_login_clicked);
+    connect(ui->lineEdit_SecureCode, &QLineEdit::returnPressed, this, &SignUp::on_pushButton_login_clicked);
+    connect(ui->lineEdit_ConfPass, &QLineEdit::returnPressed, this, &SignUp::on_pushButton_login_clicked);
 }
 
 SignUp::~SignUp()

@@ -7,6 +7,7 @@
 #include <QTextStream>
 #include <QCryptographicHash>
 #include <QPixmap>
+#include <QLineEdit>
 
 LogIn::LogIn(QWidget *parent) :
     QMainWindow(parent),
@@ -22,6 +23,8 @@ LogIn::LogIn(QWidget *parent) :
     ui->pushButton_back->setFont(font);
     ui->pushButton_enter->setFont(font);
 
+    connect(ui->lineEdit_pass, &QLineEdit::returnPressed, this, &LogIn::on_pushButton_enter_clicked);
+    connect(ui->lineEdit_username, &QLineEdit::returnPressed, this, &LogIn::on_pushButton_enter_clicked);
 }
 
 LogIn::~LogIn()
@@ -69,9 +72,20 @@ void LogIn::on_pushButton_enter_clicked()
             #ifdef Q_OS_WIN
                 path += ".exe";
             #endif
-            QProcess::startDetached(path);
+
+            QString decryptedFirstName = simpleXOREncryptDecrypt(QByteArray::fromHex(fields[0].toUtf8()), key);
+            QString decryptedLastName  = simpleXOREncryptDecrypt(QByteArray::fromHex(fields[1].toUtf8()), key);
+            QString decryptedUsername  = simpleXOREncryptDecrypt(QByteArray::fromHex(fields[2].toUtf8()), key);
+            QString decryptedEmail     = simpleXOREncryptDecrypt(QByteArray::fromHex(fields[4].toUtf8()), key);
+
+            QStringList arguments;
+            arguments << decryptedFirstName << decryptedLastName <<decryptedUsername << decryptedEmail;
+
+            QProcess::startDetached(path, arguments);
 
             file.close();
+            qApp->quit();
+            QCoreApplication::exit(0);
             this->close();
             return;
         }

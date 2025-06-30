@@ -23,6 +23,7 @@ SOURCES += \
     PlayList.cpp \
     buttons.cpp \
     chatmessagedelegate.cpp \
+    informaition.cpp \
     main.cpp \
     musicplayer_commands.cpp \
     musicplayerpage.cpp \

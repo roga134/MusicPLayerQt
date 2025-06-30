@@ -20,7 +20,7 @@ public:
    explicit musicplayerpage(QWidget *parent = nullptr);
     ~musicplayerpage();
     QStringList getAllTrackNames() const;
-
+    void setinformation(QString firstName,QString lastName,QString username,QString email);
 
 private slots:
     void on_pushButton_play_clicked();
@@ -85,7 +85,7 @@ private slots:
     void on_actionprevios_song_triggered();
     void on_actionplay_triggered();
     void on_actionnext_trak_triggered();
-    void on_actionexit_triggered();
+    void on_actionexit_2_triggered();
     void on_actionDon_t_shuffel_triggered();
     void on_actionshuffel_all_triggered();
 
@@ -121,6 +121,8 @@ private slots:
     void on_pushButton_chat_clicked();
 
     void addChatMessage(const QString &message, bool isMyMessage);
+
+    void on_pushButton_info_clicked();
 
 private:
     Ui::musicplayerpage *ui;
@@ -184,6 +186,10 @@ private:
     bool chatActive = false;
     QStandardItemModel *chatModel =nullptr;
     ChatMessageDelegate *chatDelegate;
+
+    QString firstName, lastName, username, email;
+    ChatMessageDelegate *infotDelegate;
+    QStandardItemModel *infotModel ;
 };
 
 #endif
