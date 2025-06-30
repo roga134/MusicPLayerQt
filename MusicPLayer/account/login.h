@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QLabel>
+#include <QProcess>
 #include "menu.h"
 
 namespace Ui {
