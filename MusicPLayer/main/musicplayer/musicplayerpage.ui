@@ -224,7 +224,7 @@
           <item>
            <widget class="QSlider" name="time">
             <property name="orientation">
-             <enum>Qt::Orientation::Horizontal</enum>
+             <enum>Qt::Horizontal</enum>
             </property>
            </widget>
           </item>
@@ -252,7 +252,7 @@
           <item>
            <widget class="QSlider" name="volum">
             <property name="orientation">
-             <enum>Qt::Orientation::Horizontal</enum>
+             <enum>Qt::Horizontal</enum>
             </property>
            </widget>
           </item>
@@ -334,7 +334,7 @@
      <x>0</x>
      <y>0</y>
      <width>1002</width>
-     <height>26</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuMusic">
@@ -347,9 +347,9 @@
     <addaction name="actionplay"/>
     <addaction name="actionnext_trak"/>
     <addaction name="separator"/>
-    <addaction name="actionexit"/>
-    <addaction name="separator"/>
     <addaction name="actionUndo"/>
+    <addaction name="separator"/>
+    <addaction name="actionexit_2"/>
    </widget>
    <widget class="QMenu" name="menuPlaylist">
     <property name="title">
@@ -456,6 +456,11 @@
   <action name="actionUndo">
    <property name="text">
     <string>Undo</string>
+   </property>
+  </action>
+  <action name="actionexit_2">
+   <property name="text">
+    <string>exit</string>
    </property>
   </action>
  </widget>
