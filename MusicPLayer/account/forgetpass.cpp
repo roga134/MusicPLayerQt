@@ -65,11 +65,19 @@ void ForgetPass::on_pushButton_Done_clicked()
 {
     QFile file("information.txt");
 
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+    try {
+        if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+        {
+            throw std::runtime_error("can not open information file for reading");
+        }
+    }
+    catch (const std::exception& e)
     {
-        QMessageBox::warning(this, "File Error", "Cannot open file.");
+        QMessageBox::critical(this, "File Error", e.what());
         return ;
     }
+
+
 
     QTextStream in(&file);
     char key = 0x5A;

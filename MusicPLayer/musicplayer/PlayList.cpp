@@ -183,49 +183,56 @@ void musicplayerpage::on_pushButton_loadPlaylist_clicked()
 
 void musicplayerpage::renamePlaylistTab(int index)
 {
-    if (index < 0 || index >= ui->tabWidget->count())
-        return;
-
-    QString oldName = ui->tabWidget->tabText(index);
-    QString newName = QInputDialog::getText(this, "Rename Playlist","Enter new playlist name:", QLineEdit::Normal, oldName);
-
-    if (!newName.isEmpty() && newName != oldName)
+    try
     {
-        if (playlists.find(newName) != playlists.end())
-        {
-            QMessageBox::warning(this, "Error", "A playlist with this name already exists.");
+        if (index < 0 || index >= ui->tabWidget->count())
             return;
-        }
 
-        ui->tabWidget->setTabText(index, newName);
+        QString oldName = ui->tabWidget->tabText(index);
+        QString newName = QInputDialog::getText(this, "Rename Playlist","Enter new playlist name:", QLineEdit::Normal, oldName);
 
-        auto it = playlists.find(oldName);
-        if (it != playlists.end())
+        if (!newName.isEmpty() && newName != oldName)
         {
-            playlists[newName] = std::move(it->second);
-            playlists.erase(it);
-        }
-
-        if (playlistModels.contains(oldName))
-        {
-            playlistModels[newName] = playlistModels[oldName];
-            playlistModels.remove(oldName);
-        }
-
-        for (auto it = mainkey.begin(); it != mainkey.end(); ++it)
-        {
-            if (it.value() == oldName)
+            if (playlists.find(newName) != playlists.end())
             {
-                it.value() = newName;
-                break;
+                throw std::runtime_error("playlist name already exists");
             }
+
+            ui->tabWidget->setTabText(index, newName);
+
+            auto it = playlists.find(oldName);
+            if (it != playlists.end())
+            {
+                playlists[newName] = std::move(it->second);
+                playlists.erase(it);
+            }
+
+            if (playlistModels.contains(oldName))
+            {
+                playlistModels[newName] = playlistModels[oldName];
+                playlistModels.remove(oldName);
+            }
+
+            for (auto it = mainkey.begin(); it != mainkey.end(); ++it)
+            {
+                if (it.value() == oldName)
+                {
+                    it.value() = newName;
+                    break;
+                }
+            }
+
+            if (currentPlaylistName == oldName)
+                currentPlaylistName = newName;
+
+            qDebug() << "Playlist renamed from" << oldName << "to" << newName;
         }
-
-        if (currentPlaylistName == oldName)
-            currentPlaylistName = newName;
-
-        qDebug() << "Playlist renamed from" << oldName << "to" << newName;
+    }catch(const std::exception& e)
+    {
+        QMessageBox::warning(this,"Error",QString(e.what()));
     }
+
+
 }
 
 void musicplayerpage::showContextMenu(const QPoint &pos)
@@ -248,44 +255,57 @@ void musicplayerpage::showContextMenu(const QPoint &pos)
 
 void musicplayerpage::addToQueueFromListView(QListView *listView, const QModelIndex &index)
 {
-    QString playlistName;
-
-    for (const auto& key : playlistModels.keys())
+    try
     {
-        if (playlistModels[key] == listView->model())
+        QString playlistName;
+
+        for (const auto& key : playlistModels.keys())
         {
-            playlistName = key;
-            break;
+            if (playlistModels[key] == listView->model())
+            {
+                playlistName = key;
+                break;
+            }
         }
+
+        if (playlistName.isEmpty()) return;
+
+        auto& playlist = playlists[playlistName];
+        int row = index.row();
+        if (row < 0 || row >= static_cast<int>(playlist.size()))
+            throw std::out_of_range("Invalid track index");
+
+        auto it = playlist.begin();
+        std::advance(it, row);
+
+        temporary.push(*it);
+
+        if (!queueListView) {
+            createQueueTab();
+        }
+
+        QStandardItem *item = new QStandardItem(it->fileName());
+        if(!item)
+            throw std::bad_alloc();
+
+        item->setData(it->toString(), Qt::UserRole);
+        queueModel->appendRow(item);
+
+        if (player->playbackState() != QMediaPlayer::PlayingState && temporary.size() == 1) {
+            QUrl nextTrack = temporary.front();
+            player->setSource(nextTrack);
+            player->play();
+            updateCurrentSongLabel();
+        }
+
+        QMessageBox::information(this, "Added to Queue", "Track added to temporary queue");
+    }catch(const std::exception& e)
+    {
+        QMessageBox::critical(this,"Error","Failed to add to queue");
+
     }
 
-    if (playlistName.isEmpty()) return;
 
-    auto& playlist = playlists[playlistName];
-    int row = index.row();
-    if (row < 0 || row >= static_cast<int>(playlist.size())) return;
-
-    auto it = playlist.begin();
-    std::advance(it, row);
-
-    temporary.push(*it);
-
-    if (!queueListView) {
-        createQueueTab();
-    }
-
-    QStandardItem *item = new QStandardItem(it->fileName());
-    item->setData(it->toString(), Qt::UserRole);
-    queueModel->appendRow(item);
-
-    if (player->playbackState() != QMediaPlayer::PlayingState && temporary.size() == 1) {
-        QUrl nextTrack = temporary.front();
-        player->setSource(nextTrack);
-        player->play();
-        updateCurrentSongLabel();
-    }
-
-    QMessageBox::information(this, "Added to Queue", "Track added to temporary queue");
 }
 
 

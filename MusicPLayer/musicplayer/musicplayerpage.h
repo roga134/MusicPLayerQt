@@ -26,27 +26,11 @@ private slots:
     void on_pushButton_play_clicked();
     void play_pause_network();
 
-
-//     void on_pushButton_stop_clicked();
-
-
-//     void on_pushButton_repeat_clicked();
-
-//     void on_pushButton_undo_clicked();
-
-//     void on_pushButton_redo_clicked();
-
     void on_positionChanged(qint64 position);
 
     void on_durationChanged( qint64 duration);
 
     void on_mediaStatusChanged(QMediaPlayer::MediaStatus status);
-
-//     void on_addTo_QueueButton_clicked();
-
-//     void on_clear_QueueButton_clicked();
-
-//     void on_create_PlayListButton_clicked();
 
      void on_actionAdd_Track_triggered();
 
@@ -140,7 +124,6 @@ private:
     QMap<QString, QStandardItemModel*> playlistModels;
     std::list<QUrl>::iterator currentTrack ;
     std::list<QUrl>::iterator lastTrack;
-    //std::queue<QUrl> temporary;
 
 
     RepeatMode repeatMode = NoRepeat;
@@ -150,7 +133,6 @@ private:
     int previousVolume = 50 ;
 
     std::stack<std::unique_ptr<Command>> undoStack ;
-    std::stack<std::unique_ptr<Command>> redoStack ;
 
     QFileSystemModel *fileSystemModel;
     QStack<QModelIndex> directoryHistory;

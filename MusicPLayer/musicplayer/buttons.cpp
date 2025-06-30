@@ -4,23 +4,27 @@
 void musicplayerpage::on_actionAdd_Track_triggered()
 {
     QUrl trackUrl = QFileDialog::getOpenFileUrl(this, "Select Audio File", QUrl::fromLocalFile(QDir::homePath()),  "(*.*) All Files");
-
-    if (!trackUrl.isValid() || trackUrl.isEmpty())
+    try
     {
-        qDebug() << "No file selected";
-        return;
-    }
-    if(!QFile::exists(trackUrl.toLocalFile()))
-    {
-        qDebug() << "File dose not exist" << trackUrl.toLocalFile();
-        return ;
-    }
-    execute_Command(std::make_unique<AddTrackCommand>(playlists[currentPlaylistName], playlistModels, trackUrl , mainkey[indexPlaylist]));
+        if (!trackUrl.isValid() || trackUrl.isEmpty())
+        {
+            throw std::runtime_error("No file select");
+        }
+        if(!QFile::exists(trackUrl.toLocalFile()))
+        {
+            throw std::runtime_error("file does not exit");
+        }
+        execute_Command(std::make_unique<AddTrackCommand>(playlists[currentPlaylistName], playlistModels, trackUrl , mainkey[indexPlaylist]));
 
 
-    if (currentTrack == playlists[currentPlaylistName].end())
+        if (currentTrack == playlists[currentPlaylistName].end())
+        {
+            currentTrack = playlists[currentPlaylistName].begin();
+        }
+
+    }catch(const std::exception& e)
     {
-        currentTrack = playlists[currentPlaylistName].begin();
+        qDebug()<<"Exception in on_actionAdd_Track_triggered " << e.what();
     }
 }
 
@@ -165,8 +169,14 @@ void musicplayerpage::handleDoubleClickFromListView(QListView *listView, const Q
 
 void musicplayerpage::execute_Command(std::unique_ptr<Command> command)
 {
-    command->execute();
-    undoStack.push(std::move(command));
+    try
+    {
+        command->execute();
+        undoStack.push(std::move(command));
+    }catch(const std::exception &e)
+    {
+        qDebug() <<"Command execution failed :" <<  e.what();
+    }
 }
 
 void musicplayerpage::on_pushButton_prev_clicked()
@@ -216,75 +226,80 @@ void musicplayerpage::on_actionRemove_Track_triggered()
     QListView *listView = new QListView(this);
     listView = listsong[indexPlaylist];
 
-    if (!listView)
-        return;
-
-    QModelIndex index = listView->currentIndex();
-    if (!index.isValid())
-        return;
-
-    QString matchedPlaylistName;
-    for (const auto& key : playlistModels.keys())
+   try
     {
-        if (playlistModels[key] == listView->model())
+        QModelIndex index = listView->currentIndex();
+        if (!index.isValid() ||!listView)
+            throw std::runtime_error("Invalied list view or index");
+
+        QString matchedPlaylistName;
+        for (const auto& key : playlistModels.keys())
         {
-            matchedPlaylistName = key;
-            break;
+            if (playlistModels[key] == listView->model())
+            {
+                matchedPlaylistName = key;
+                break;
+            }
         }
-    }
 
-    if (matchedPlaylistName.isEmpty())
-    {
-        qDebug() << "Playlist not found for the given QListView";
-        return;
-    }
-
-    auto& playlist = playlists[matchedPlaylistName];
-    if (playlist.empty())
-        return;
-
-    int row = index.row();
-    if (row < 0 || row >= static_cast<int>(playlist.size()))
-        return;
-
-    auto it = playlist.begin();
-    std::advance(it, row);
-
-    execute_Command(std::make_unique<RemoveTrackCommand>(
-        playlist,
-        playlistModels,
-        it,
-        mainkey[indexPlaylist]
-        ));
-
-    if (playlist.empty())
-    {
-        currentTrack = playlist.end();
-        player->stop();
-        player->setSource(QString());
-        listView->clearSelection();
-    }
-    else
-    {
-        if (row < static_cast<int>(playlist.size()))
+        if (matchedPlaylistName.isEmpty())
         {
-            currentTrack = playlist.begin();
-            std::advance(currentTrack, row);
+            qDebug() << "Playlist not found for the given QListView";
+            return;
+        }
+
+        auto& playlist = playlists[matchedPlaylistName];
+        if (playlist.empty())
+            throw std::runtime_error("Playlist is already empty!");
+
+        int row = index.row();
+        if (row < 0 || row >= static_cast<int>(playlist.size()))
+            return;
+
+        auto it = playlist.begin();
+        std::advance(it, row);
+
+        execute_Command(std::make_unique<RemoveTrackCommand>(
+            playlist,
+            playlistModels,
+            it,
+            mainkey[indexPlaylist]
+            ));
+
+        if (playlist.empty())
+        {
+            currentTrack = playlist.end();
+            player->stop();
+            player->setSource(QString());
+            listView->clearSelection();
         }
         else
         {
-            currentTrack = std::prev(playlist.end());
+            if (row < static_cast<int>(playlist.size()))
+            {
+                currentTrack = playlist.begin();
+                std::advance(currentTrack, row);
+            }
+            else
+            {
+                currentTrack = std::prev(playlist.end());
+            }
+            player->setSource(*currentTrack);
         }
-        player->setSource(*currentTrack);
-    }
 
-    player->pause();
-    ui->pushButton_play->setIcon(QIcon(":/icons/image/play-buttton.png"));
-    ui->label_played->setText("00:00");
-    ui->label_remaning->setText("00:00");
-    ui->time->setValue(0);
+        player->pause();
+        ui->pushButton_play->setIcon(QIcon(":/icons/image/play-buttton.png"));
+        ui->label_played->setText("00:00");
+        ui->label_remaning->setText("00:00");
+        ui->time->setValue(0);
 
-    listView->setModel(playlistModels[matchedPlaylistName]);
+        listView->setModel(playlistModels[matchedPlaylistName]);
+
+
+   }catch(const std::exception& e)
+   {
+       qDebug() << "Error in removing track:" <<e.what();
+   }
 }
 
 

@@ -3,24 +3,40 @@
 
 void musicplayerpage::on_actionopen_file_triggered()
 {
-    QStringList files = QFileDialog::getOpenFileNames(this,tr("Select Music Files"),QDir::homePath(),tr("Audio Files (*.mp3 *.wav);;All Files (*)"));
-
-    if (files.isEmpty())
+    try
     {
-        return;
+        QStringList files = QFileDialog::getOpenFileNames(this,tr("Select Music Files"),QDir::homePath(),tr("Audio Files (*.mp3 *.wav);;All Files (*)"));
+
+        if (files.isEmpty())
+        {
+            return;
+        }
+
+        for (const QString& filePath : files)
+        {
+            QFileInfo info(filePath);
+            if(!info.exists())
+            {
+                throw std::runtime_error("File does not exist");
+            }
+
+            QUrl track = QUrl::fromLocalFile(filePath);
+            if(!track.isValid())
+            {
+                throw std::runtime_error("Invalid file URL");
+            }
+
+            execute_Command(std::make_unique<AddTrackCommand>(playlists[mainkey[indexPlaylist]], playlistModels, track , mainkey[indexPlaylist]));
+
+
+            listsong[indexPlaylist]->setModel(playlistModels[mainkey[indexPlaylist]]);
+        }
+    }catch(const std::exception& e)
+    {
+        QMessageBox::critical(this, "Error", QString("Failed to open files: %1").arg(e.what()));
     }
 
-    for (const QString& filePath : files)
-    {
-        QFileInfo info(filePath);
 
-        QUrl track = QUrl::fromLocalFile(filePath);
-
-        execute_Command(std::make_unique<AddTrackCommand>(playlists[mainkey[indexPlaylist]], playlistModels, track , mainkey[indexPlaylist]));
-
-
-        listsong[indexPlaylist]->setModel(playlistModels[mainkey[indexPlaylist]]);
-    }
 }
 
 void musicplayerpage::on_pushButton_files_clicked()
@@ -67,28 +83,49 @@ void musicplayerpage::save_playlist_to_file(const QModelIndex &index)
 
 void musicplayerpage::on_pushButton_home_clicked()
 {
-    if(fileclied)
-    {
-        forwardHistory.clear();
-        directoryHistory.push(ui->generalListView->rootIndex());
+    try {
+        if (fileclied) {
+            if (!fileSystemModel) {
+                throw std::runtime_error("File system model not initialized");
+            }
 
-        QModelIndex homeIndex = fileSystemModel->index(QDir::homePath());
-        ui->generalListView->setRootIndex(homeIndex);
+            forwardHistory.clear();
+            directoryHistory.push(ui->generalListView->rootIndex());
+
+            QModelIndex homeIndex = fileSystemModel->index(QDir::homePath());
+            if (!homeIndex.isValid()) {
+                throw std::runtime_error("Failed to get home directory index");
+            }
+
+            ui->generalListView->setRootIndex(homeIndex);
+        }
     }
-    else
-    {
-        // یه چی خودت بزار که انگار باز نشده
+    catch (const std::exception& e) {
+        QMessageBox::warning(this, "Navigation Error", e.what());
     }
+
+
+
 }
 
 void musicplayerpage::on_pushButton_forward_clicked()
 {
-    if (!forwardHistory.isEmpty())
+    try
     {
-        directoryHistory.push(ui->generalListView->rootIndex());
-        QModelIndex next = forwardHistory.pop();
-        ui->generalListView->setRootIndex(next);
+        if (!forwardHistory.isEmpty())
+        {
+            directoryHistory.push(ui->generalListView->rootIndex());
+            QModelIndex next = forwardHistory.pop();
+            if (!next.isValid()) {
+                throw std::runtime_error("Invalid forward index");
+            }
+            ui->generalListView->setRootIndex(next);
+
+    }        }catch (const std::exception& e) {
+        QMessageBox::warning(this, "Navigation Error", e.what());
     }
+
+
 }
 
 void musicplayerpage::on_pushButton_back_clicked()

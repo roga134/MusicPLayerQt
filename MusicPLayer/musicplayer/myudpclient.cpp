@@ -27,15 +27,17 @@ void MyTcpClient::connectToServer(const QHostAddress &host, quint16 port)
 
 void MyTcpClient::sendMessage(const QString &message)
 {
-    if (tcpSocket->state() == QAbstractSocket::ConnectedState)
-    {
-        tcpSocket->write(message.toUtf8());
-        emit logMessage(QString("Sent: %1").arg(message));
-    }
-    else
-    {
-        emit logMessage("Cannot send: not connected to server.");
-    }
+
+        if (tcpSocket->state() == QAbstractSocket::ConnectedState)
+        {
+            tcpSocket->write(message.toUtf8());
+            emit logMessage(QString("Sent: %1").arg(message));
+        }
+        else
+        {
+            emit logMessage("Cannot send: not connected to server.");
+        }
+
 }
 
 void MyTcpClient::onReadyRead()
@@ -83,5 +85,21 @@ void MyTcpClient::onDisconnected()
 
 void MyTcpClient::setMusicPlayerPage(musicplayerpage *page)
 {
-    musicplayerpagePtr = page;
+    try{
+        if(!page)
+        {
+            throw std::runtime_error("Null pointer passed to setMusicPlayerPage");
+        }
+          musicplayerpagePtr = page;
+    }catch(const std::exception &e)
+    {
+        emit logMessage("Error setting music player page");
+    }
+    catch(...)
+    {
+        emit logMessage("Unknow error setting music player page");
+
+    }
+
+
 }

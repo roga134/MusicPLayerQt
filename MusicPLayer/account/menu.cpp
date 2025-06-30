@@ -1,6 +1,7 @@
 #include "menu.h"
 #include "ui_menu.h"
 #include <QPixmap>
+#include <QMessageBox>
 
 menu::menu(QWidget *parent) :
     QMainWindow(parent),
@@ -52,9 +53,14 @@ void menu::on_pushButton_forPass_clicked()
 
 void menu::on_pushButton_logIn_clicked()
 {
-    this->close();
-    login = new LogIn(this);
-    login->show();
+    try
+    {
+        this->close();
+        login = new LogIn(this);
+        login->show();
+    }catch(const std::exception& e){
+       QMessageBox::critical(this,"window Error","Failed to create login window ");
+    }
 }
 
 void menu::on_pushButton_signUp_clicked()
