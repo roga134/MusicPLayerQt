@@ -124,6 +124,8 @@ private slots:
 
     void on_pushButton_info_clicked();
 
+    void on_actionUndo_triggered();
+
 private:
     Ui::musicplayerpage *ui;
     QMediaPlayer *player;

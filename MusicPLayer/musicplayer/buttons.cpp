@@ -58,7 +58,7 @@ void musicplayerpage::on_pushButton_play_clicked()
     {
         if(currentTrack == playlists[currentPlaylistName].end())
         {
-            qDebug() << "Invalid currentTrack! Cannot play.";
+            currentTrack = playlists[currentPlaylistName].begin();
             return;
         }
 
@@ -166,6 +166,7 @@ void musicplayerpage::handleDoubleClickFromListView(QListView *listView, const Q
 void musicplayerpage::execute_Command(std::unique_ptr<Command> command)
 {
     command->execute();
+    undoStack.push(std::move(command));
 }
 
 void musicplayerpage::on_pushButton_prev_clicked()
@@ -277,7 +278,7 @@ void musicplayerpage::on_actionRemove_Track_triggered()
         player->setSource(*currentTrack);
     }
 
-    execute_Command(std::make_unique<PauseCommand>(player));
+    player->pause();
     ui->pushButton_play->setIcon(QIcon(":/icons/image/play-buttton.png"));
     ui->label_played->setText("00:00");
     ui->label_remaning->setText("00:00");

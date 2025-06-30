@@ -151,3 +151,21 @@ void musicplayerpage::ChangeGraphicView(QPoint pos)
 {
 
 }
+
+void musicplayerpage::on_actionUndo_triggered()
+{
+    if (!undoStack.empty()) {
+
+        auto command = std::move(undoStack.top());
+
+        undoStack.pop();
+        command->undo();
+        updateCurrentSongLabel();
+        qDebug() << "Undo:" << command->description();
+    } else {
+        qDebug() << "Nothing to undo!";
+    }
+
+
+}
+

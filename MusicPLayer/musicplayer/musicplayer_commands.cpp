@@ -28,7 +28,7 @@ void PlayCommand::undo()
 
 QString PlayCommand::description() const
 {
-    return  "Play: " + track->fileName();
+    return  "Play: ";
 }
 
 
@@ -82,9 +82,17 @@ std::list<QUrl>::iterator AddTrackCommand::executeWithResult()
 
 void AddTrackCommand::undo()
 {
+
     if (!playlist.empty()) {
         playlist.pop_back();
-        //model->removeRow(model->rowCount() - 1);
+    }
+
+    if (model.contains(key)) {
+        QStandardItemModel* playlistModel = model[key];
+        if (playlistModel && playlistModel->rowCount() > 0)
+        {
+            playlistModel->removeRow(playlistModel->rowCount() - 1);
+        }
     }
 }
 
@@ -122,15 +130,23 @@ void RemoveTrackCommand::execute()
 
 void RemoveTrackCommand::undo()
 {
-    auto it = playlist.begin();
+     auto it = playlist.begin();
     std::advance(it, pos);
     playlist.insert(it, *track);
 
-    QStandardItem* item = new QStandardItem(track->fileName());
-    item->setData(track->toString(), Qt::UserRole);
-    //model->insertRow(pos, item);
+    if (model.contains(key))
+    {
+         QStandardItemModel* playlistModel = model[key];
+        if (playlistModel)
+        {
+                QStandardItem* item = new QStandardItem(track->fileName());
+                item->setData(track->toString(), Qt::UserRole);
+                playlistModel->insertRow(pos, item);
+        }
+    }
 
 }
+
 
 QString RemoveTrackCommand::description() const
 {
@@ -393,36 +409,6 @@ void CreatePlaylistCommand::undo()
 QString CreatePlaylistCommand::description() const
 {
     return "Create Playlist: " + name;
-}
-
-
-// DeletePlayListCommand class
-
-DeletePlaylistCommand::DeletePlaylistCommand(QMap<QString, std::list<QUrl>>& playlists,QStringListModel* playlistsModel, const QString& name)
-    : playlists(playlists), playlistsModel(playlistsModel), name(name),
-    playlistContent(playlists.value(name)) {}
-
-void DeletePlaylistCommand::execute()
-{
-    if (playlists.contains(name))
-    {
-        playlists.remove(name);
-
-        QStringList list = playlistsModel->stringList();
-        list.removeAll(name);
-        playlistsModel->setStringList(list);
-    }
-}
-
-void DeletePlaylistCommand::undo()
-{
-    if (!playlists.contains(name))
-    {
-        playlists.insert(name, playlistContent);
-        QStringList list = playlistsModel->stringList();
-        list.append(name);
-        playlistsModel->setStringList(list);
-    }
 }
 
 QString DeletePlaylistCommand::description() const
