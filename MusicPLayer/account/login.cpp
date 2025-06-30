@@ -25,6 +25,19 @@ LogIn::LogIn(QWidget *parent) :
 
     connect(ui->lineEdit_pass, &QLineEdit::returnPressed, this, &LogIn::on_pushButton_enter_clicked);
     connect(ui->lineEdit_username, &QLineEdit::returnPressed, this, &LogIn::on_pushButton_enter_clicked);
+
+    connect(this, &LogIn::downPressed, this, [=]() {
+        if (ui->lineEdit_username->hasFocus())
+            ui->lineEdit_pass->setFocus();
+        else if (ui->lineEdit_pass->hasFocus())
+            ui->pushButton_enter->setFocus();
+    });
+
+    connect(this, &LogIn::upPressed, this, [=]() {
+        if (ui->lineEdit_pass->hasFocus())
+            ui->lineEdit_username->setFocus();
+    });
+
 }
 
 LogIn::~LogIn()
@@ -105,5 +118,21 @@ void LogIn::resizeEvent(QResizeEvent *event)
 
         QPixmap pixmap(":/new/image1/image.jpg");
         background->setPixmap(pixmap.scaled(this->size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+    }
+}
+
+void LogIn::keyPressEvent(QKeyEvent *event)
+{
+    if (event->key() == Qt::Key_Down)
+    {
+        emit downPressed();
+    }
+    else if (event->key() == Qt::Key_Up)
+    {
+        emit upPressed();
+    }
+    else
+    {
+        QMainWindow::keyPressEvent(event);
     }
 }

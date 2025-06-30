@@ -22,6 +22,10 @@ public:
     ~SignUp();
     void WriteOnFile();
 
+signals:
+    void downPressed();
+    void upPressed();
+
 private slots:
     void on_pushButton_back_clicked();
 
@@ -29,6 +33,8 @@ private slots:
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
+
+    void keyPressEvent(QKeyEvent *event);
 
 private:
     Ui::SignUp *ui;

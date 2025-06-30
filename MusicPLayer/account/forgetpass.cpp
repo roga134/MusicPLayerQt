@@ -27,6 +27,26 @@ ForgetPass::ForgetPass(QWidget *parent) :
     connect(ui->lineEdit_secure, &QLineEdit::returnPressed, this, &ForgetPass::on_pushButton_Done_clicked);
     connect(ui->lineEdit_username, &QLineEdit::returnPressed, this, &ForgetPass::on_pushButton_Done_clicked);
 
+    connect(this, &ForgetPass::downPressed, this, [=]() {
+        if (ui->lineEdit_username->hasFocus())
+            ui->lineEdit_secure->setFocus();
+        else if (ui->lineEdit_secure->hasFocus())
+            ui->lineEdit_Pass->setFocus();
+        else if (ui->lineEdit_Pass->hasFocus())
+            ui->lineEdit_confPass->setFocus();
+        else if (ui->lineEdit_confPass->hasFocus())
+            ui->pushButton_Done->setFocus();
+    });
+
+    connect(this, &ForgetPass::upPressed, this, [=]() {
+        if (ui->lineEdit_confPass->hasFocus())
+            ui->lineEdit_Pass->setFocus();
+        else if (ui->lineEdit_Pass->hasFocus())
+            ui->lineEdit_secure->setFocus();
+        else if (ui->lineEdit_secure->hasFocus())
+            ui->lineEdit_username->setFocus();
+    });
+
 }
 
 ForgetPass::~ForgetPass()
@@ -161,5 +181,21 @@ void ForgetPass::resizeEvent(QResizeEvent *event)
 
         QPixmap pixmap(":/new/image1/image.jpg");
         background->setPixmap(pixmap.scaled(this->size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+    }
+}
+
+void ForgetPass::keyPressEvent(QKeyEvent *event)
+{
+    if (event->key() == Qt::Key_Down)
+    {
+        emit downPressed();
+    }
+    else if (event->key() == Qt::Key_Up)
+    {
+        emit upPressed();
+    }
+    else
+    {
+        QMainWindow::keyPressEvent(event);
     }
 }

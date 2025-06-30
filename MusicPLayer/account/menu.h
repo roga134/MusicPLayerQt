@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QLabel>
+#include <QKeyEvent>
 #include "signup.h"
 #include "login.h"
 #include "forgetpass.h"

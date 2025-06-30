@@ -25,8 +25,16 @@ private slots:
 
     void on_pushButton_enter_clicked();
 
+signals:
+    void downPressed();
+    void upPressed();
+
+Q_SIGNAL void returnPressed();
+
 protected:
     void resizeEvent(QResizeEvent *event) override;
+
+    void keyPressEvent(QKeyEvent *event);
 
 private:
     Ui::LogIn *ui;

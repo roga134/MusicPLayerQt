@@ -20,6 +20,10 @@ public:
     ~ForgetPass();
     void CheckPass();
 
+signals:
+    void upPressed();
+    void downPressed();
+
 private slots:
     void on_pushButton_back_clicked();
 
@@ -27,6 +31,9 @@ private slots:
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
+
+    void keyPressEvent(QKeyEvent *event);
+
 
 private:
     Ui::ForgetPass *ui;

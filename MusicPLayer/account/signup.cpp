@@ -29,6 +29,39 @@ SignUp::SignUp(QWidget *parent) :
     connect(ui->lineEdit_Email, &QLineEdit::returnPressed, this, &SignUp::on_pushButton_login_clicked);
     connect(ui->lineEdit_SecureCode, &QLineEdit::returnPressed, this, &SignUp::on_pushButton_login_clicked);
     connect(ui->lineEdit_ConfPass, &QLineEdit::returnPressed, this, &SignUp::on_pushButton_login_clicked);
+
+    connect(this, &SignUp::downPressed, this, [=]() {
+        if (ui->lineEdit_FirstName->hasFocus())
+            ui->lineEdit_LastName->setFocus();
+        else if (ui->lineEdit_LastName->hasFocus())
+            ui->lineEdit_UserName->setFocus();
+        else if (ui->lineEdit_UserName->hasFocus())
+            ui->lineEdit_Email->setFocus();
+        else if (ui->lineEdit_Email->hasFocus())
+            ui->lineEdit_Pass->setFocus();
+        else if (ui->lineEdit_Pass->hasFocus())
+            ui->lineEdit_ConfPass->setFocus();
+        else if (ui->lineEdit_ConfPass->hasFocus())
+            ui->lineEdit_SecureCode->setFocus();
+        else if (ui->lineEdit_SecureCode->hasFocus())
+            ui->pushButton_login->setFocus();
+    });
+
+    connect(this, &SignUp::upPressed, this, [=]() {
+        if (ui->lineEdit_SecureCode->hasFocus())
+            ui->lineEdit_ConfPass->setFocus();
+        else if (ui->lineEdit_ConfPass->hasFocus())
+            ui->lineEdit_Pass->setFocus();
+        else if (ui->lineEdit_Pass->hasFocus())
+            ui->lineEdit_Email->setFocus();
+        else if (ui->lineEdit_Email->hasFocus())
+            ui->lineEdit_UserName->setFocus();
+        else if (ui->lineEdit_UserName->hasFocus())
+            ui->lineEdit_LastName->setFocus();
+        else if (ui->lineEdit_LastName->hasFocus())
+            ui->lineEdit_FirstName->setFocus();
+    });
+
 }
 
 SignUp::~SignUp()
@@ -102,4 +135,14 @@ void SignUp::resizeEvent(QResizeEvent *event)
         QPixmap pixmap(":/new/image1/image.jpg");
         background->setPixmap(pixmap.scaled(this->size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
     }
+}
+
+void SignUp::keyPressEvent(QKeyEvent *event)
+{
+    if (event->key() == Qt::Key_Down)
+        emit downPressed();
+    else if (event->key() == Qt::Key_Up)
+        emit upPressed();
+    else
+        QMainWindow::keyPressEvent(event);
 }
