@@ -11,11 +11,7 @@ void musicplayerpage::setinformation(QString firstName,QString lastName,QString 
 
 void musicplayerpage::on_pushButton_info_clicked()
 {
-    ui->generalListView->setStyleSheet("");
-    chatLineEdit->hide();
-    sendButton->hide();
     chatActive = false;
-
 
     ui->generalListView->setModel(infotModel);
     ui->generalListView->setItemDelegate(infotDelegate);
@@ -40,7 +36,6 @@ void musicplayerpage::on_pushButton_info_clicked()
         );
 
     infotModel->clear();
-
     infotModel->appendRow(new QStandardItem("First Name: " + firstName));
     infotModel->appendRow(new QStandardItem("Last Name: " + lastName));
     infotModel->appendRow(new QStandardItem("Username: " + username));

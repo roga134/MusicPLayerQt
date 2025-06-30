@@ -48,6 +48,8 @@
 #include <QShortcut>
 #include <QKeySequence>
 #include "ClickableRectItem.h"
+#include <QVBoxLayout>
+#include <QHBoxLayout>
 
 enum RepeatMode
 {

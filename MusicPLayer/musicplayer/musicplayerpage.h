@@ -115,6 +115,12 @@ private slots:
 
     void settoolbar();
 
+    void on_actionDon_t_repeat_triggered();
+
+    void on_actionrepeat_trak_triggered();
+
+    void on_actionrepeat_playlist_triggered();
+
 private:
     Ui::musicplayerpage *ui;
     QMediaPlayer *player;
@@ -175,10 +181,14 @@ private:
     bool chatActive = false;
     QStandardItemModel *chatModel =nullptr;
     ChatMessageDelegate *chatDelegate;
+    QWidget* chatContainer;
+    QVBoxLayout *mainLayout;
+    QHBoxLayout * inputLayput;
 
     QString firstName, lastName, username, email;
     ChatMessageDelegate *infotDelegate;
     QStandardItemModel *infotModel ;
+
 
     void keyPressEvent(QKeyEvent *event);
     bool ctrlMPressed = false;

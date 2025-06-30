@@ -131,10 +131,6 @@ QStringList musicplayerpage::getAllTrackNames() const
 
 void musicplayerpage::on_pushButton_chat_clicked()
 {
-    ui->generalListView->setStyleSheet("");
-    ui->generalListView->setModel(nullptr);
-    ui->generalListView->setItemDelegate(nullptr);
-
     if(is_server == 0)
     {
         QMessageBox::warning(this,"Connection Error","You must connect as server/client first!");

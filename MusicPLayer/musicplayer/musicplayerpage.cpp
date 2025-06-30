@@ -96,10 +96,11 @@ musicplayerpage::musicplayerpage(QWidget *parent)
     sendButton = new QPushButton("send", this);
     chatLineEdit->hide();
     sendButton->hide();
-    QVBoxLayout *mainLayout = new QVBoxLayout(ui->generalListView);
+
+    mainLayout = new QVBoxLayout(ui->generalListView);
     mainLayout->addWidget(ui->generalListView);
 
-    QHBoxLayout * inputLayput = new QHBoxLayout;
+   inputLayput = new QHBoxLayout;
     chatLineEdit->setSizePolicy(QSizePolicy::Expanding ,QSizePolicy::Fixed);
     chatLineEdit->setFixedHeight(30);
 
@@ -172,3 +173,5 @@ void musicplayerpage::on_actionUndo_triggered()
 
 
 }
+
+
