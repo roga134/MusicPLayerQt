@@ -28,7 +28,6 @@ musicplayerpage::musicplayerpage(QWidget *parent)
     ui->generalListView->setStyleSheet("background-color: #FFFFFF;");
     ui->tabWidget->setStyleSheet("background-color: #D6EAF8;");
     ui->generalListView->setStyleSheet("background-color: #FFFFFF;");
-
     settoolbar();
 
 
@@ -91,6 +90,10 @@ musicplayerpage::musicplayerpage(QWidget *parent)
 
     connect(tcpServer, &MyTcpServer::playMusicRequested,this, &musicplayerpage::play_pause_network);
     connect(tcpClient, &MyTcpClient::playMusicRequestedclient,this, &musicplayerpage::play_pause_network);
+    connect(tcpClient, &MyTcpClient::updateDeviceList,this, &musicplayerpage::updateDeviceList);
+    connect(tcpServer, &MyTcpServer::updateDeviceList,this, &musicplayerpage::updateDeviceList);
+    connect(tcpClient, &MyTcpClient::adminNameReceived, this, &musicplayerpage::onAdminNameReceived);
+    connect(ui->generalListView, &QListView::customContextMenuRequested, this, &musicplayerpage::showUserContextMenu);
 
     chatDelegate = new ChatMessageDelegate(this);
     chatModel = new QStandardItemModel(this);
@@ -149,7 +152,6 @@ musicplayerpage::musicplayerpage(QWidget *parent)
 
                                   },Qt::QueuedConnection);
     });
-
     this->installEventFilter(this);
 }
 
@@ -182,8 +184,4 @@ void musicplayerpage::on_actionUndo_triggered()
     } else {
         qDebug() << "Nothing to undo!";
     }
-
-
 }
-
-

@@ -11,20 +11,20 @@ MyTcpClient::MyTcpClient(QObject *parent)
 void MyTcpClient::connectToServer(const QHostAddress &host, quint16 port)
 {
     tcpSocket->connectToHost(host, port);
-    emit logMessage(QString("Connecting to %1:%2 ...").arg(host.toString()).arg(port));
-
-    connect(tcpSocket, &QTcpSocket::connected, this, [=]() {
-        emit logMessage("Connected to server.");
-        if (musicplayerpagePtr)
-        {
-            QString myUsername = musicplayerpagePtr->GetUserName();
-            tcpSocket->write(myUsername.toUtf8());
-        }
+    connect(tcpSocket, &QTcpSocket::connected, this, [this]()
+    {
+        tcpSocket->write(musicplayerpagePtr->GetUserName().toUtf8());
     });
 }
 
 void MyTcpClient::sendMessage(const QString &message)
 {
+    if(message == "pause" || message == "play")
+    {
+        tcpSocket->write(message.toUtf8());
+        return ;
+    }
+
     if (tcpSocket->state() == QAbstractSocket::ConnectedState)
     {
         tcpSocket->write(message.toUtf8());
@@ -41,12 +41,32 @@ void MyTcpClient::onReadyRead()
     QByteArray data = tcpSocket->readAll();
     QString msg = QString::fromUtf8(data).trimmed();
 
+    if (msg == "pause" || msg == "play")
+    {
+        emit playMusicRequestedclient();
+    }
+
     if (serveruser.isEmpty())
     {
-        serveruser = msg;
-        emit logMessage("Server username set to: " + serveruser);
+        if (msg.startsWith("admin:")) {
+            serveruser = msg.mid(QString("admin:").length());
+            emit logMessage("Server admin username set to: " + serveruser);
+        } else {
+            serveruser = msg;
+            emit logMessage("Server username set to: " + serveruser);
+        }
         return;
     }
+
+    if (msg.startsWith("userlist:"))
+    {
+        QStringList userList = msg.mid(QString("userlist:").length()).split("|");
+
+        currusers = userList;
+        emit updateDeviceList(userList);
+        return;
+    }
+
 
     int sepIndex = msg.indexOf(": ");
     if (sepIndex != -1) {
@@ -60,34 +80,9 @@ void MyTcpClient::onReadyRead()
     {
         emit logMessage(msg);
         emit messageReceived(msg, serveruser);
-
-        if (msg == "pause")
-        {
-            emit playMusicRequestedclient();
-        }
-        else if (msg.startsWith("playlist:"))
-        {
-            QStringList serverTracks = msg.mid(QString("playlist:").length()).split("|");
-            QStringList clientTracks = musicplayerpagePtr->getAllTrackNames();
-
-            for (const QString &track : clientTracks)
-            {
-                if (!serverTracks.contains(track))
-                {
-                    emit logMessage("Track missing on server: " + track);
-                }
-            }
-
-            for (const QString &track : serverTracks)
-            {
-                if (!clientTracks.contains(track))
-                {
-                    emit logMessage("Track missing on client: " + track);
-                }
-            }
-        }
     }
 }
+
 
 void MyTcpClient::onDisconnected()
 {
@@ -96,20 +91,14 @@ void MyTcpClient::onDisconnected()
 
 void MyTcpClient::setMusicPlayerPage(musicplayerpage *page)
 {
-    musicplayerpagePtr = page;
-    try{
-        if(!page)
-        {
+    try {
+        if (!page) {
             throw std::runtime_error("Null pointer passed to setMusicPlayerPage");
         }
         musicplayerpagePtr = page;
-    }catch(const std::exception &e)
-    {
-        emit logMessage("Error setting music player page");
-    }
-    catch(...)
-    {
-        emit logMessage("Unknow error setting music player page");
-
+    } catch (const std::exception &e) {
+        emit logMessage(QString("Error setting music player page: %1").arg(e.what()));
+    } catch (...) {
+        emit logMessage("Unknown error setting music player page");
     }
 }

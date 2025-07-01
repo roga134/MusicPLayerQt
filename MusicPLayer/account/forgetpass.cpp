@@ -7,6 +7,7 @@
 #include <QTextStream>
 #include <QCryptographicHash>
 #include <QPixmap>
+#include <QShortcut>
 
 ForgetPass::ForgetPass(QWidget *parent) :
     QMainWindow(parent),
@@ -46,6 +47,10 @@ ForgetPass::ForgetPass(QWidget *parent) :
         else if (ui->lineEdit_secure->hasFocus())
             ui->lineEdit_username->setFocus();
     });
+
+    QShortcut *escShortcut = new QShortcut(QKeySequence(Qt::Key_Escape), this);
+    escShortcut->setContext(Qt::ApplicationShortcut);
+    connect(escShortcut , &QShortcut::activated , this , &ForgetPass::on_pushButton_back_clicked);
 
 }
 

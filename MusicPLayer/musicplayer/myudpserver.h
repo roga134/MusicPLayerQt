@@ -1,5 +1,5 @@
-#ifndef MYUDPSERVER_H
-#define MYUDPSERVER_H
+#ifndef MYTCPSERVER_H
+#define MYTCPSERVER_H
 
 #include <QObject>
 #include <QSet>
@@ -18,11 +18,15 @@ public:
     bool startServer(quint16 port);
     void sendToAllClients(const QString &message);
     void sendToClient(QTcpSocket *client, const QString &message);
+    QStringList getAllUsernames() const;
+    void broadcastUserList();
+    void removeUserByUsername(const QString &username);
 
 signals:
     void logMessage(const QString &msg);
     void playMusicRequested();
     void messageReceived(const QString &message, const QString &sender);
+    void updateDeviceList(const QStringList &userList);
 
 private slots:
     void onNewConnection();
@@ -30,10 +34,13 @@ private slots:
     void onDisconnected();
 
 private:
+    QString adminUsername;
     QTcpServer *tcpServer;
     QSet<QTcpSocket*> clients;
     QHash<QTcpSocket*, QString> clientUsernames;
-    musicplayerpage *musicplayerpagePtr = nullptr;
+    musicplayerpage *musicplayerpagePtr;
+    QSet<QTcpSocket*> initializedClients;
+    void forwardCommandToOthers(QTcpSocket* sender, const QString& command);
 };
 
-#endif // MYUDPSERVER_H
+#endif // MYTCPSERVER_H

@@ -16,12 +16,23 @@ class musicplayerpage : public QMainWindow
 {
     Q_OBJECT
 
+signals:
+    void requestUserRemoval(const QString &username);
+private slots:
+    void onAdminNameReceived(const QString &adminName);
+
 public:
    explicit musicplayerpage(QWidget *parent = nullptr);
     ~musicplayerpage();
     QStringList getAllTrackNames() const;
     void setinformation(QString firstName,QString lastName,QString username,QString email);
+
     QString GetUserName(){return username;}
+    void updateDeviceList(const QStringList &userList);
+    void setDeviceList(const QStringList &usernames);
+
+    QStandardItemModel* getUserModel(){return userModel;}
+    QString getServerUsername() const{return serveruser;}
 
 private slots:
     void on_pushButton_play_clicked();
@@ -121,6 +132,10 @@ private slots:
 
     void on_actionrepeat_playlist_triggered();
 
+    void on_pushButton_devices_clicked();
+
+    void showUserContextMenu(const QPoint &pos);
+
 private:
     Ui::musicplayerpage *ui;
     QMediaPlayer *player;
@@ -188,9 +203,13 @@ private:
     ChatMessageDelegate *infotDelegate;
     QStandardItemModel *infotModel ;
 
-
     void keyPressEvent(QKeyEvent *event);
     bool ctrlMPressed = false;
+    QStandardItemModel *userModel = nullptr;
+
+    QString serveruser;
+
+    bool ispause = true;
 };
 
 #endif

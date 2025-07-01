@@ -8,6 +8,7 @@
 #include <QCryptographicHash>
 #include <QPixmap>
 #include <QLineEdit>
+#include <QShortcut>
 
 LogIn::LogIn(QWidget *parent) :
     QMainWindow(parent),
@@ -38,6 +39,9 @@ LogIn::LogIn(QWidget *parent) :
             ui->lineEdit_username->setFocus();
     });
 
+    QShortcut *escShortcut = new QShortcut(QKeySequence(Qt::Key_Escape), this);
+    escShortcut->setContext(Qt::ApplicationShortcut);
+    connect(escShortcut , &QShortcut::activated , this , &LogIn::on_pushButton_back_clicked);
 }
 
 LogIn::~LogIn()

@@ -52,6 +52,15 @@ void musicplayerpage::on_pushButton_mode3_clicked()
 
 void musicplayerpage::on_pushButton_play_clicked()
 {
+    if(ispause)
+    {
+        ispause = false;
+    }
+    else
+    {
+        ispause = true;
+    }
+
     handleplaybutton();
     if (player->playbackState() == QMediaPlayer::PlayingState)
     {
@@ -63,6 +72,11 @@ void musicplayerpage::on_pushButton_play_clicked()
         if(currentTrack == playlists[currentPlaylistName].end())
         {
             currentTrack = playlists[currentPlaylistName].begin();
+            execute_Command(std::make_unique<PlayCommand>(player, currentTrack));
+            lastTrack = currentTrack;
+            ui->pushButton_play->setIcon(QIcon(":/icons/image/pause.png"));
+
+            updateCurrentSongLabel();
             return;
         }
 
@@ -91,7 +105,12 @@ void musicplayerpage::play_pause_network()
     {
         if(currentTrack == playlists[currentPlaylistName].end())
         {
-            qDebug() << "Invalid currentTrack! Cannot play.";
+            currentTrack = playlists[currentPlaylistName].begin();
+            execute_Command(std::make_unique<PlayCommand>(player, currentTrack));
+            lastTrack = currentTrack;
+            ui->pushButton_play->setIcon(QIcon(":/icons/image/pause.png"));
+
+            updateCurrentSongLabel();
             return;
         }
 
@@ -111,6 +130,14 @@ void musicplayerpage::play_pause_network()
 
 void musicplayerpage::onItemDoubleClicked(const QModelIndex &index)
 {
+    if(ispause)
+    {
+        ispause = false;
+    }
+    else
+    {
+        ispause = true;
+    }
     handleplaybutton();
     auto &playlist = playlists[currentPlaylistName];
     int row = index.row();

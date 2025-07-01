@@ -5,8 +5,8 @@ MyTcpServer::MyTcpServer(musicplayerpage *playerPage, QObject *parent)
     : QObject(parent), musicplayerpagePtr(playerPage)
 {
     tcpServer = new QTcpServer(this);
-
     connect(tcpServer, &QTcpServer::newConnection, this, &MyTcpServer::onNewConnection);
+    connect(musicplayerpagePtr, &musicplayerpage::requestUserRemoval, this, &MyTcpServer::removeUserByUsername);
 }
 
 bool MyTcpServer::startServer(quint16 port)
@@ -17,6 +17,11 @@ bool MyTcpServer::startServer(quint16 port)
     }
 
     emit logMessage(QString("Server started on port %1").arg(port));
+
+    if (musicplayerpagePtr) {
+        adminUsername = musicplayerpagePtr->GetUserName();
+    }
+
     return true;
 }
 
@@ -30,18 +35,17 @@ void MyTcpServer::onNewConnection()
     });
 
     connect(clientSocket, &QTcpSocket::disconnected, this, [=]() {
-        clients.remove(clientSocket);
-        emit logMessage("Client disconnected.");
+        onDisconnected();
     });
 
-    if (musicplayerpagePtr) {
-        QString myUsername = musicplayerpagePtr->GetUserName();
-        clientSocket->write(myUsername.toUtf8());
-    }
-
     emit logMessage("New client connected.");
-}
 
+    if (!adminUsername.isEmpty() && !initializedClients.contains(clientSocket))
+    {
+        clientSocket->write(("admin:" + adminUsername + "\n").toUtf8());
+        initializedClients.insert(clientSocket);
+    }
+}
 
 void MyTcpServer::onReadyRead(QTcpSocket *clientSocket)
 {
@@ -51,37 +55,65 @@ void MyTcpServer::onReadyRead(QTcpSocket *clientSocket)
     QByteArray data = clientSocket->readAll();
     QString message = QString::fromUtf8(data).trimmed();
 
-    if (!clientUsernames.contains(clientSocket)) {
+    if (message.isEmpty())
+        return;
+
+    if (!clientUsernames.contains(clientSocket))
+    {
         clientUsernames[clientSocket] = message;
         emit logMessage("New user registered: " + message);
+        broadcastUserList();
+        return;
     }
-    else
+
+
+    QString username = clientUsernames.value(clientSocket);
+
+    if (message == "play")
     {
-        QString username = clientUsernames[clientSocket];
-        emit messageReceived(message, username);
+        emit playMusicRequested();
+        forwardCommandToOthers(clientSocket, "play");
+        return;
+    }
 
-        for (QTcpSocket* otherClient : clients)
+    if (message == "pause")
+    {
+        emit playMusicRequested();
+        forwardCommandToOthers(clientSocket, "pause");
+        return;
+    }
+
+
+    if (message == "request_user_list") {
+        QStringList usernames = getAllUsernames();
+        if (!adminUsername.isEmpty() && !usernames.contains(adminUsername))
+            usernames.append(adminUsername);
+        QString userListMsg = "userlist:" + usernames.join("|") + "\n";
+        clientSocket->write(userListMsg.toUtf8());
+        return;
+    }
+
+    emit messageReceived(message, username);
+
+    QString forwardMessage = username + ": " + message + "\n";
+    for (QTcpSocket* otherClient : clients)
+    {
+        if (otherClient != clientSocket && otherClient->state() == QAbstractSocket::ConnectedState)
         {
-            if (otherClient != clientSocket && otherClient->state() == QAbstractSocket::ConnectedState)
-            {
-                QString forwardMessage = username + ": " + message;
-                otherClient->write(forwardMessage.toUtf8());
-            }
+            otherClient->write(forwardMessage.toUtf8());
         }
-
-        if (message == "pause")
-        {
-            emit playMusicRequested();
-        }/*
-        else if (message.startsWith("playlist:"))
-        {
-            QStringList tracks = message.mid(QString("playlist:").length()).split("|");
-
-            // مثال: ثبت لیست آهنگ کلاینت
-            emit logMessage("Received playlist from " + username + ": " + tracks.join(", "));
-        }*/
     }
 }
+
+void MyTcpServer::forwardCommandToOthers(QTcpSocket* sender, const QString& command)
+{
+    for (QTcpSocket* client : clients) {
+        if (client != sender && client->state() == QAbstractSocket::ConnectedState) {
+            client->write(command.toUtf8());
+        }
+    }
+}
+
 
 void MyTcpServer::onDisconnected()
 {
@@ -89,19 +121,23 @@ void MyTcpServer::onDisconnected()
     if (!clientSocket)
         return;
 
+    QString username = clientUsernames.take(clientSocket);
     clients.remove(clientSocket);
-    QString username = clientUsernames.value(clientSocket, "Unknown");
-    clientUsernames.remove(clientSocket);
+    initializedClients.remove(clientSocket);
 
     emit logMessage("Client disconnected: " + username);
+    broadcastUserList();
     clientSocket->deleteLater();
 }
 
 void MyTcpServer::sendToAllClients(const QString &message)
 {
-    for (QTcpSocket *client : clients) {
-        if (client->state() == QAbstractSocket::ConnectedState) {
+    for (QTcpSocket *client : clients)
+    {
+        if (client->state() == QAbstractSocket::ConnectedState)
+        {
             client->write(message.toUtf8());
+            emit logMessage(message);
         }
     }
 }
@@ -112,3 +148,58 @@ void MyTcpServer::sendToClient(QTcpSocket *client, const QString &message)
         client->write(message.toUtf8());
     }
 }
+
+QStringList MyTcpServer::getAllUsernames() const
+{
+    QStringList usernames;
+    for (auto it = clientUsernames.begin(); it != clientUsernames.end(); ++it) {
+        usernames << it.value();
+    }
+    return usernames;
+}
+
+void MyTcpServer::broadcastUserList()
+{
+    QStringList usernames = getAllUsernames();
+    /*
+    for (int i = 0; i < usernames.size(); ++i)
+    {
+        if (usernames[i] == musicplayerpagePtr->GetUserName())
+        {
+            usernames[i] += " (admin)";
+            //break;
+        }
+        emit logMessage(" hi " + usernames[i]);
+    }*/
+
+    QString userListMsg = "userlist:" + usernames.join("|") + "|" +(musicplayerpagePtr->GetUserName() + " (admin)")  +"\n";
+
+    for (QTcpSocket *client : clients)
+    {
+        if (client->state() == QAbstractSocket::ConnectedState)
+        {
+            client->write(userListMsg.toUtf8());
+        }
+    }
+    emit updateDeviceList(usernames);
+}
+
+void MyTcpServer::removeUserByUsername(const QString &username)
+{
+    QTcpSocket *targetSocket = nullptr;
+
+    for (auto it = clientUsernames.begin(); it != clientUsernames.end(); ++it) {
+        if (it.value() == username) {
+            targetSocket = it.key();
+            break;
+        }
+    }
+
+    if (!targetSocket) {
+        qDebug() << "User not found:" << username;
+        return;
+    }
+
+    targetSocket->disconnectFromHost();
+}
+

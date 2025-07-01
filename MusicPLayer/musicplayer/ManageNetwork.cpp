@@ -105,29 +105,31 @@ void musicplayerpage::handleplaybutton()
 {
     if (is_server == 1)
     {
-        tcpServer->sendToAllClients("pause");
-        addLogMessage("Sent 'pause' to all clients");
+        if(!ispause)
+        {
+            tcpServer->sendToAllClients("play");
+            addLogMessage("Sent 'play' to all clients");
+        }
+        else
+        {
+            tcpServer->sendToAllClients("pause");
+            addLogMessage("Sent 'pause' to all clients");
+        }
+
     }
     else if (is_server == 2)
     {
-        tcpClient->sendMessage("pause");
+        if(!ispause)
+        {
+            tcpClient->sendMessage("play");
+        }
+        else
+        {
+            tcpClient->sendMessage("pause");
+        }
     }
 }
 
-QStringList musicplayerpage::getAllTrackNames() const
-{
-    QStringList trackNames;
-    for (auto model : playlistModels)
-    {
-        for (int row = 0; row < model->rowCount(); ++row)
-        {
-            QStandardItem *item = model->item(row);
-            if (item)
-                trackNames << item->text();
-        }
-    }
-    return trackNames;
-}
 
 void musicplayerpage::on_pushButton_chat_clicked()
 {
@@ -212,15 +214,17 @@ void musicplayerpage::on_pushButton_chat_clicked()
 
             if (is_server == 1)
             {
+                play_pause_network();
                 tcpServer->sendToAllClients(message);
             }
             else
             {
+                play_pause_network();
                 tcpClient->sendMessage(message);
             }
         }
     });
-
+    /*
     connect(sendButton, &QPushButton::clicked, this, [this]() {
         QString message = chatLineEdit->text().trimmed();
         if (!message.isEmpty())
@@ -237,8 +241,19 @@ void musicplayerpage::on_pushButton_chat_clicked()
                 tcpClient->sendMessage(message);
             }
         }
-    });
+    });*/
 
+    connect(sendButton, &QPushButton::clicked, this, [this]() {
+        QString text = chatLineEdit->text().trimmed();
+        if (!text.isEmpty()) {
+            if (is_server == 1)
+                tcpServer->sendToAllClients(text);
+            else if (is_server == 2)
+                tcpClient->sendMessage(text);
+
+            chatLineEdit->clear();
+        }
+    });
 }
 
 void musicplayerpage::addChatMessage(const QString &message, bool isMyMessage)
@@ -246,7 +261,6 @@ void musicplayerpage::addChatMessage(const QString &message, bool isMyMessage)
     QStandardItem *item = new QStandardItem(message);
     item->setTextAlignment(isMyMessage ? Qt::AlignRight : Qt::AlignLeft);
 
-    // استایل حباب پیام
     QString style;
     if(isMyMessage)
     {
@@ -261,12 +275,145 @@ void musicplayerpage::addChatMessage(const QString &message, bool isMyMessage)
 
 
     if(isMyMessage) {
-        item->setBackground(QBrush(QColor(220, 248, 203))); // سبز آبی بسیار روشن
+        item->setBackground(QBrush(QColor(220, 248, 203)));
     } else
     {
-        item->setBackground(QBrush(QColor(255, 255, 255))); // سفید
+        item->setBackground(QBrush(QColor(255, 255, 255)));
     }
 
     chatModel->appendRow(item);
     ui->generalListView->scrollToBottom();
+}
+
+void musicplayerpage::on_pushButton_devices_clicked()
+{
+    ui->generalListView->setContextMenuPolicy(Qt::CustomContextMenu);
+    ui->generalListView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    ui->generalListView->setSelectionMode(QAbstractItemView::NoSelection);
+    ui->generalListView->setFocusPolicy(Qt::NoFocus);
+
+
+
+    if (is_server == 1)
+    {
+        QStringList usernames = tcpServer->getAllUsernames();
+        QString serverUsername = GetUserName();
+
+        if (!usernames.contains(serverUsername))
+        {
+            usernames.append(serverUsername);
+        }
+
+        QAbstractItemModel *oldModel = ui->generalListView->model();
+        if (oldModel) {
+            delete oldModel;
+        }
+        QStandardItemModel *userModel = new QStandardItemModel(this);
+
+        userModel = new QStandardItemModel(this);
+        for (const QString &name : usernames)
+        {
+            QString displayName = name;
+            if (name == serverUsername)
+                displayName += " (admin)";
+
+            QStandardItem *item = new QStandardItem(displayName);
+            item->setEditable(false);
+            userModel->appendRow(item);
+        }
+    }
+    else if (is_server == 2)
+    {
+        tcpClient->sendMessage("request_user_list");
+
+        QStringList usernames = tcpClient->getAllUsernames();
+        QString serverUsername = GetUserName();
+
+        updateDeviceList(usernames);
+
+        if (!usernames.contains(serverUsername))
+        {
+            usernames.append(serverUsername);
+        }
+
+        QAbstractItemModel *oldModel = ui->generalListView->model();
+        if (oldModel) {
+            delete oldModel;
+        }
+        QStandardItemModel *userModel = new QStandardItemModel(this);
+
+        userModel = new QStandardItemModel(this);
+        for (const QString &name : usernames)
+        {
+            QString displayName = name;
+            if (name == serverUsername)
+                displayName += " (admin)";
+
+            QStandardItem *item = new QStandardItem(displayName);
+            item->setEditable(false);
+            userModel->appendRow(item);
+        }
+    }
+    ui->generalListView->setModel(userModel);
+
+}
+
+void musicplayerpage::updateDeviceList(const QStringList &usernames)
+{
+    if (!this->isVisible()) return;
+
+    QString serverUsername;
+
+    if(is_server == 2)
+    {
+        serverUsername = tcpClient->getServerUsername();
+    }
+    else
+    {
+        serverUsername = this->GetUserName();
+    }
+    QStandardItemModel *userModel = new QStandardItemModel(this);
+
+    for (const QString &name : usernames)
+    {
+        QString displayName = name;
+        if (name == serverUsername)
+            displayName += " (admin)";
+
+        QStandardItem *item = new QStandardItem(displayName);
+        item->setEditable(false);
+        userModel->appendRow(item);
+    }
+}
+
+void musicplayerpage::showUserContextMenu(const QPoint &pos)
+{
+    QModelIndex index = ui->generalListView->indexAt(pos);
+    if (!index.isValid())
+        return;
+
+    QString selectedUser = index.data().toString();
+    selectedUser = selectedUser.replace(" (admin)", "");
+
+    QMenu contextMenu;
+    QAction *removeAction = contextMenu.addAction("Remove User");
+
+    QAction *selectedAction = contextMenu.exec(ui->generalListView->viewport()->mapToGlobal(pos));
+    if (selectedAction == removeAction)
+    {
+        if (is_server == 1)
+        {
+            emit requestUserRemoval(selectedUser);
+        }
+        else
+        {
+            QMessageBox::information(this, "Permission Denied", "Only the server can remove users.");
+        }
+    }
+}
+
+
+void musicplayerpage::onAdminNameReceived(const QString &adminName)
+{
+    serveruser = adminName;
 }

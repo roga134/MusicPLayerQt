@@ -125,13 +125,12 @@ void musicplayerpage::on_actionDon_t_repeat_triggered()
     execute_Command(std::make_unique<SetRepeatModeCommand>(repeatMode, NoRepeat));
 }
 
-
 void musicplayerpage::on_actionrepeat_trak_triggered()
 {
     ui->pushButton_mode3->setIcon(QIcon(":/icons/image/repeat-one.png"));
     execute_Command(std::make_unique<SetRepeatModeCommand>(repeatMode,RepreatOne));
-
 }
+
 void musicplayerpage::on_actionrepeat_playlist_triggered()
 {
     ui->pushButton_mode3->setIcon(QIcon(":/icons/image/repeat.png"));

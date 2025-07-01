@@ -17,6 +17,7 @@
         <file>image/repeat.png</file>
         <file>image/repeat-one.png</file>
         <file>image/no-repeat.png</file>
+        <file>image/delete.png</file>
     </qresource>
     <qresource prefix="/">
         <file>image/image2.jpg</file>

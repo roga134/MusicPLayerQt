@@ -7,6 +7,7 @@
 #include <QTextStream>
 #include <QCryptographicHash>
 #include <QPixmap>
+#include <QShortcut>
 
 SignUp::SignUp(QWidget *parent) :
     QMainWindow(parent),
@@ -61,6 +62,10 @@ SignUp::SignUp(QWidget *parent) :
         else if (ui->lineEdit_LastName->hasFocus())
             ui->lineEdit_FirstName->setFocus();
     });
+
+    QShortcut *escShortcut = new QShortcut(QKeySequence(Qt::Key_Escape), this);
+    escShortcut->setContext(Qt::ApplicationShortcut);
+    connect(escShortcut , &QShortcut::activated , this , &SignUp::on_pushButton_back_clicked);
 
 }
 

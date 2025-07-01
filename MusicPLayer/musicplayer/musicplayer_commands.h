@@ -47,10 +47,10 @@
 #include <QHeaderView>
 #include <QShortcut>
 #include <QKeySequence>
-#include "ClickableRectItem.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QSpacerItem>
+#include "ClickableRectItem.h"
 
 enum RepeatMode
 {
