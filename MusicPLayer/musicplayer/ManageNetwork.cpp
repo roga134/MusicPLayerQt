@@ -214,34 +214,24 @@ void musicplayerpage::on_pushButton_chat_clicked()
 
             if (is_server == 1)
             {
-                play_pause_network();
+                if(message == "play" || message =="pause")
+                {
+                    play_pause_network();
+                }
+
                 tcpServer->sendToAllClients(message);
             }
             else
             {
-                play_pause_network();
+                if(message == "play" || message =="pause")
+                {
+                    play_pause_network();
+                }
                 tcpClient->sendMessage(message);
             }
         }
     });
-    /*
-    connect(sendButton, &QPushButton::clicked, this, [this]() {
-        QString message = chatLineEdit->text().trimmed();
-        if (!message.isEmpty())
-        {
-            addChatMessage(message, true);
-            chatLineEdit->clear();
 
-            if (is_server == 1)
-            {
-                tcpServer->sendToAllClients(message);
-            }
-            else
-            {
-                tcpClient->sendMessage(message);
-            }
-        }
-    });*/
 
     connect(sendButton, &QPushButton::clicked, this, [this]() {
         QString text = chatLineEdit->text().trimmed();
@@ -320,6 +310,7 @@ void musicplayerpage::on_pushButton_devices_clicked()
             QStandardItem *item = new QStandardItem(displayName);
             item->setEditable(false);
             userModel->appendRow(item);
+            ui->generalListView->setModel(userModel);
         }
     }
     else if (is_server == 2)
@@ -327,14 +318,9 @@ void musicplayerpage::on_pushButton_devices_clicked()
         tcpClient->sendMessage("request_user_list");
 
         QStringList usernames = tcpClient->getAllUsernames();
-        QString serverUsername = GetUserName();
+        QString serverUsername = tcpClient->getServerUsername();
 
         updateDeviceList(usernames);
-
-        if (!usernames.contains(serverUsername))
-        {
-            usernames.append(serverUsername);
-        }
 
         QAbstractItemModel *oldModel = ui->generalListView->model();
         if (oldModel) {
@@ -352,10 +338,10 @@ void musicplayerpage::on_pushButton_devices_clicked()
             QStandardItem *item = new QStandardItem(displayName);
             item->setEditable(false);
             userModel->appendRow(item);
+
+            ui->generalListView->setModel(userModel);
         }
     }
-    ui->generalListView->setModel(userModel);
-
 }
 
 void musicplayerpage::updateDeviceList(const QStringList &usernames)

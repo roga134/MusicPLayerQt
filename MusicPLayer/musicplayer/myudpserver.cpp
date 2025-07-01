@@ -84,7 +84,8 @@ void MyTcpServer::onReadyRead(QTcpSocket *clientSocket)
     }
 
 
-    if (message == "request_user_list") {
+    if (message == "request_user_list")
+    {
         QStringList usernames = getAllUsernames();
         if (!adminUsername.isEmpty() && !usernames.contains(adminUsername))
             usernames.append(adminUsername);
@@ -126,6 +127,8 @@ void MyTcpServer::onDisconnected()
     initializedClients.remove(clientSocket);
 
     emit logMessage("Client disconnected: " + username);
+    emit messageReceived("disconnected" , username);
+    forwardCommandToOthers(clientSocket, "disconnected(" + username+")\n");
     broadcastUserList();
     clientSocket->deleteLater();
 }

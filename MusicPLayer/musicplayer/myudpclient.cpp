@@ -69,17 +69,26 @@ void MyTcpClient::onReadyRead()
 
 
     int sepIndex = msg.indexOf(": ");
-    if (sepIndex != -1) {
+    if (sepIndex != -1)
+    {
         QString sender = msg.left(sepIndex);
         QString message = msg.mid(sepIndex + 2);
 
         emit logMessage(sender + ": " + message);
-        emit messageReceived(message, sender);
+        if(sender == serveruser)
+        {
+            emit messageReceived("(admin) " + message, sender);
+        }
+        else
+        {
+            emit messageReceived(message, sender);
+        }
     }
     else
     {
         emit logMessage(msg);
         emit messageReceived(msg, serveruser);
+
     }
 }
 
