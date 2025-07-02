@@ -324,6 +324,8 @@ void musicplayerpage::createQueueTab()
 
 void musicplayerpage::on_mediaStatusChanged(QMediaPlayer::MediaStatus status)
 {
+    visualizer->stop();  // توقف ویژوالایزر
+    visualizer2->stop();
     if (status != QMediaPlayer::EndOfMedia)
         return;
 

@@ -32,6 +32,8 @@ SOURCES += \
     sound.cpp \
     time.cpp \
     toolbar.cpp \
+    visualizer.cpp \
+    visualizer2.cpp
 
 HEADERS += \
     ClickableRectItem.h \
@@ -39,15 +41,21 @@ HEADERS += \
     musicplayer_commands.h \
     musicplayerpage.h \
     myudpclient.h \
-    myudpserver.h
+    myudpserver.h \
+    visualizer.h \
+    visualizer2.h
+
 
 FORMS += \
     musicplayerpage.ui
+
+RESOURCES += \
+        icons.qrc
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
-RESOURCES += \
-    icons.qrc
+
+

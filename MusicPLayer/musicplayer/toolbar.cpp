@@ -136,3 +136,18 @@ void musicplayerpage::on_actionrepeat_playlist_triggered()
     ui->pushButton_mode3->setIcon(QIcon(":/icons/image/repeat.png"));
     execute_Command(std::make_unique<SetRepeatModeCommand>(repeatMode, RepeatAll));
 }
+void musicplayerpage::on_actionUndo_triggered()
+{
+    if (!undoStack.empty()) {
+
+        auto command = std::move(undoStack.top());
+
+        undoStack.pop();
+        command->undo();
+        updateCurrentSongLabel();
+        qDebug() << "Undo:" << command->description();
+    } else {
+        qDebug() << "Nothing to undo!";
+    }
+}
+

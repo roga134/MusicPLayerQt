@@ -220,6 +220,14 @@
          </widget>
         </item>
         <item>
+         <widget class="QComboBox" name="comboBox">
+          <property name="styleSheet">
+           <string notr="true">background-color: rgb(255, 255, 255);
+font: 300 10pt &quot;Sultan Free&quot;;</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QGraphicsView" name="graphicsView"/>
         </item>
         <item>
@@ -234,7 +242,7 @@
           <item>
            <widget class="QSlider" name="time">
             <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+             <enum>Qt::Orientation::Horizontal</enum>
             </property>
            </widget>
           </item>
@@ -262,7 +270,7 @@
           <item>
            <widget class="QSlider" name="volum">
             <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+             <enum>Qt::Orientation::Horizontal</enum>
             </property>
            </widget>
           </item>
@@ -344,7 +352,7 @@
      <x>0</x>
      <y>0</y>
      <width>1002</width>
-     <height>23</height>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuMusic">

@@ -5,12 +5,21 @@
 #include "myudpserver.h"
 #include "myudpclient.h"
 #include "chatmessagedelegate.h"
+#include "visualizer.h"
+#include "visualizer2.h"
+#include <QComboBox>
 
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class musicplayerpage; }
 QT_END_NAMESPACE
 
+
+enum VisualizerMode {
+    CoverMode,      // حالت نمایش کاور
+    VisualizerMode1, // ویژوالایزر الگوریتم اول
+    VisualizerMode2  // ویژوالایزر الگوریتم دوم
+};
 
 class musicplayerpage : public QMainWindow
 {
@@ -110,8 +119,6 @@ private slots:
 
     void on_pushButton_mode3_clicked();
 
-    void ChangeGraphicView(QPoint pos);
-
     void on_pushButton_server_clicked();
 
     void on_pushButton_client_clicked();
@@ -135,6 +142,16 @@ private slots:
     void on_pushButton_devices_clicked();
 
     void showUserContextMenu(const QPoint &pos);
+
+    void setIcon();
+    void setChat();
+    void setPlayer();
+    void setInternet();
+
+    void setupVisualizerUI();
+    void changeVisualizerMode(int index);
+    void resizeEvent(QResizeEvent *event);
+
 
 private:
     Ui::musicplayerpage *ui;
@@ -210,6 +227,8 @@ private:
     QString serveruser;
 
     bool ispause = true;
+    Visualizer *visualizer;
+    Visualizer2 *visualizer2;
 };
 
 #endif

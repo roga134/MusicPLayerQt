@@ -75,7 +75,6 @@ void musicplayerpage::on_pushButton_play_clicked()
             execute_Command(std::make_unique<PlayCommand>(player, currentTrack));
             lastTrack = currentTrack;
             ui->pushButton_play->setIcon(QIcon(":/icons/image/pause.png"));
-
             updateCurrentSongLabel();
             return;
         }
@@ -96,10 +95,14 @@ void musicplayerpage::on_pushButton_play_clicked()
 
 void musicplayerpage::play_pause_network()
 {
+
+
     if (player->playbackState() == QMediaPlayer::PlayingState)
     {
         execute_Command(std::make_unique<PauseCommand>(player));
         ui->pushButton_play->setIcon(QIcon(":/icons/image/play-buttton.png"));
+        visualizer->stop();
+        visualizer2->stop();
     }
     else
     {
@@ -386,42 +389,4 @@ void musicplayerpage::setvolum(int value)
      audioOutput->setVolume(value / 100.0f);
 }
 
-void musicplayerpage::loadCoverOfMusic()
-{
-    auto  metaData = player->metaData();
-    QVariant thumbVariant = metaData.value(QMediaMetaData::ThumbnailImage);
-    QImage Default(":///image/image2.jpg");
 
-    if(thumbVariant.isValid())
-    {
-        QImage image = thumbVariant.value<QImage>();
-        if(!image.isNull())
-        {
-            QGraphicsScene * scene1 = new QGraphicsScene(this);
-            QGraphicsPixmapItem *item = scene1->addPixmap(QPixmap::fromImage(image));
-            ui->graphicsView->setScene(scene1);
-            ui->graphicsView->fitInView(item,Qt::KeepAspectRatio);
-
-        }
-        else
-        {
-            qDebug() << "image not available";
-            QGraphicsScene * scene2 = new QGraphicsScene(this);
-            QGraphicsPixmapItem *item = scene2->addPixmap(QPixmap::fromImage(Default));
-            ui->graphicsView->setScene(scene2);
-            ui->graphicsView->fitInView(item,Qt::KeepAspectRatio);
-
-        }
-
-
-    }
-    else
-    {
-        QGraphicsScene * scene3 = new QGraphicsScene(this);
-        QGraphicsPixmapItem *item = scene3->addPixmap(QPixmap::fromImage(Default));
-        ui->graphicsView->setScene(scene3);
-        ui->graphicsView->fitInView(item,Qt::KeepAspectRatio);
-    }
-
-
-}

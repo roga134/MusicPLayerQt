@@ -95,6 +95,7 @@ void LogIn::on_pushButton_enter_clicked()
             QString path = QCoreApplication::applicationDirPath() + "/../musicplayer/musicplayer";
             #ifdef Q_OS_WIN
                 path = QCoreApplication::applicationDirPath() +"/../../musicplayer/debug/musicplayer.exe";
+            qDebug() <<path;
             #endif
 
             QString decryptedFirstName = simpleXOREncryptDecrypt(QByteArray::fromHex(fields[0].toUtf8()), key);
