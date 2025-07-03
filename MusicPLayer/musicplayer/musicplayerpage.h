@@ -26,22 +26,28 @@ class musicplayerpage : public QMainWindow
     Q_OBJECT
 
 signals:
-    void requestUserRemoval(const QString &username);
+    void requestUserRemoval(const QString& username);
 private slots:
-    void onAdminNameReceived(const QString &adminName);
+    void onAdminNameReceived(const QString& adminName);
 
 public:
-   explicit musicplayerpage(QWidget *parent = nullptr);
+    explicit musicplayerpage(QWidget* parent = nullptr);
     ~musicplayerpage();
     QStringList getAllTrackNames() const;
-    void setinformation(QString firstName,QString lastName,QString username,QString email);
+    void setinformation(QString firstName, QString lastName, QString username, QString email);
 
-    QString GetUserName(){return username;}
-    void updateDeviceList(const QStringList &userList);
-    void setDeviceList(const QStringList &usernames);
+    QString GetUserName() { return username; }
+    void updateDeviceList(const QStringList& userList);
+    void setDeviceList(const QStringList& usernames);
 
-    QStandardItemModel* getUserModel(){return userModel;}
-    QString getServerUsername() const{return serveruser;}
+    QStandardItemModel* getUserModel() { return userModel; }
+    QString getServerUsername() const { return serveruser; }
+
+    void addChatMessage(const QString& message, bool isMyMessage);
+
+    QString getfilesong();
+    QString getCurrentSongName() const;
+
 
 private slots:
     void on_pushButton_play_clicked();
@@ -51,7 +57,7 @@ private slots:
 
     void on_positionChanged(qint64 position);
 
-    void on_durationChanged( qint64 duration);
+    void on_durationChanged(qint64 duration);
 
     void on_mediaStatusChanged(QMediaPlayer::MediaStatus status);
 
@@ -74,14 +80,14 @@ private slots:
 
     void on_pushButton_files_clicked();
 
-    void save_playlist_to_file(const QModelIndex &index);
+    void save_playlist_to_file(const QModelIndex& index);
 
     void on_pushButton_back_clicked();
 
     void on_actionopen_file_triggered();
 
-    void onItemDoubleClicked(const QModelIndex &index);
-    void handleDoubleClickFromListView(QListView *listView, const QModelIndex &index);
+    void onItemDoubleClicked(const QModelIndex& index);
+    void handleDoubleClickFromListView(QListView* listView, const QModelIndex& index);
 
     void setvolum(int value);
 
@@ -104,8 +110,8 @@ private slots:
     void on_pushButton_creatPlaylist_clicked();
     void onTabChanged(int index);
 
-    void showContextMenu(const QPoint &pos);
-    void addToQueueFromListView(QListView *listView, const QModelIndex &index);
+    void showContextMenu(const QPoint& pos);
+    void addToQueueFromListView(QListView* listView, const QModelIndex& index);
     void createQueueTab();
 
 
@@ -113,7 +119,7 @@ private slots:
 
     void on_pushButton_loadPlaylist_clicked();
 
-    void renamePlaylistTab(int index) ;
+    void renamePlaylistTab(int index);
 
     void loadCoverOfMusic();
 
@@ -124,8 +130,6 @@ private slots:
     void on_pushButton_client_clicked();
 
     void on_pushButton_chat_clicked();
-
-    void addChatMessage(const QString &message, bool isMyMessage);
 
     void on_pushButton_info_clicked();
 
@@ -141,7 +145,7 @@ private slots:
 
     void on_pushButton_devices_clicked();
 
-    void showUserContextMenu(const QPoint &pos);
+    void showUserContextMenu(const QPoint& pos);
 
     void setIcon();
     void setChat();
@@ -150,34 +154,37 @@ private slots:
 
     void setupVisualizerUI();
     void changeVisualizerMode(int index);
-    void resizeEvent(QResizeEvent *event);
+    void resizeEvent(QResizeEvent* event);
+
+    void playSpecificSongRequested(QString& songname);
+
 
 
 private:
-    Ui::musicplayerpage *ui;
-    QMediaPlayer *player;
-    QAudioOutput *audioOutput;
+    Ui::musicplayerpage* ui;
+    QMediaPlayer* player;
+    QAudioOutput* audioOutput;
     std::vector<QStandardItemModel*> listModels;
 
 
     std::vector<int> shuffledIndices;
-    int shuffleIndex = 0;    
+    int shuffleIndex = 0;
 
-    std::map<QString ,std::list<QUrl>> playlists;
+    std::map<QString, std::list<QUrl>> playlists;
     QMap<QString, QStandardItemModel*> playlistModels;
-    std::list<QUrl>::iterator currentTrack ;
+    std::list<QUrl>::iterator currentTrack;
     std::list<QUrl>::iterator lastTrack;
 
 
     RepeatMode repeatMode = NoRepeat;
     QString currentPlaylistName;
-    bool shuffleMode = false ;
-    bool muted = false ;
-    int previousVolume = 50 ;
+    bool shuffleMode = false;
+    bool muted = false;
+    int previousVolume = 50;
 
-    std::stack<std::unique_ptr<Command>> undoStack ;
+    std::stack<std::unique_ptr<Command>> undoStack;
 
-    QFileSystemModel *fileSystemModel;
+    QFileSystemModel* fileSystemModel;
     QStack<QModelIndex> directoryHistory;
     QStack<QModelIndex> forwardHistory;
     bool fileclied = false;
@@ -199,36 +206,38 @@ private:
     void updateCurrentSongLabel();
 
     QStringList logMessages;
-    QStandardItemModel *logmodel = nullptr;
-    void addLogMessage(const QString &msg);
+    QStandardItemModel* logmodel = nullptr;
+    void addLogMessage(const QString& msg);
 
-    MyTcpServer *tcpServer;
-    MyTcpClient *tcpClient;
+    MyTcpServer* tcpServer;
+    MyTcpClient* tcpClient;
     int is_server = 0;
     QSet<QTcpSocket*> clients;
     void handleplaybutton();
 
-    QPushButton *sendButton = nullptr;
-    QLineEdit *chatLineEdit = nullptr;
+    QPushButton* sendButton = nullptr;
+    QLineEdit* chatLineEdit = nullptr;
     bool chatActive = false;
-    QStandardItemModel *chatModel =nullptr;
-    ChatMessageDelegate *chatDelegate;
-    QVBoxLayout *mainLayout;
-    QHBoxLayout * inputLayout;
+    QStandardItemModel* chatModel = nullptr;
+    ChatMessageDelegate* chatDelegate;
+    QVBoxLayout* mainLayout;
+    QHBoxLayout* inputLayout;
 
     QString firstName, lastName, username, email;
-    ChatMessageDelegate *infotDelegate;
-    QStandardItemModel *infotModel ;
+    ChatMessageDelegate* infotDelegate;
+    QStandardItemModel* infotModel;
 
-    void keyPressEvent(QKeyEvent *event);
+    void keyPressEvent(QKeyEvent* event);
     bool ctrlMPressed = false;
-    QStandardItemModel *userModel = nullptr;
+    QStandardItemModel* userModel = nullptr;
 
     QString serveruser;
 
     bool ispause = true;
-    Visualizer *visualizer;
-    Visualizer2 *visualizer2;
+    Visualizer* visualizer;
+    Visualizer2* visualizer2;
+
+    //bool  mach_songs =true;
 };
 
 #endif

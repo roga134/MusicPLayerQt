@@ -61,28 +61,52 @@ void MyTcpServer::onReadyRead(QTcpSocket *clientSocket)
     if (!clientUsernames.contains(clientSocket))
     {
         clientUsernames[clientSocket] = message;
-        emit logMessage("New user registered: " + message);
+        emit logMessage("New user registered: " + message);\
+            emit messageReceived("connected",message);
+        QTimer::singleShot(100,this,[this]()
+        {
+
         broadcastUserList();
+            });
         return;
     }
 
 
     QString username = clientUsernames.value(clientSocket);
 
-    if (message == "play")
+    if (message.startsWith("inplay:"))
     {
-        emit playMusicRequested();
-        forwardCommandToOthers(clientSocket, "play");
+        QString songName = message.mid(QString("inplay:").length());
+
+        emit playSpecificSongRequested(songName);
+        forwardCommandToOthers(clientSocket , message);
         return;
     }
 
-    if (message == "pause")
+    if(message == "mission file")
     {
-        emit playMusicRequested();
-        forwardCommandToOthers(clientSocket, "pause");
-        return;
-    }
+        QFile file(musicplayerpagePtr->getfilesong());
 
+        if (!file.open(QIODevice::ReadOnly)) {
+            qDebug() << "Cannot open file for reading!";
+            return;
+        }
+
+        QByteArray fileData = file.readAll();
+        file.close();  // بهتره بعد از readAll
+
+        QString fileName = QFileInfo(file).fileName();
+        QByteArray header = "FILE:" + fileName.toUtf8() + ":" + QByteArray::number(fileData.size()) + "\n";
+
+        qDebug() << "Sending file:" << fileName << "Size:" << fileData.size();
+
+        for (QTcpSocket* client : clients)
+        {
+            client->write(header);
+            client->write(fileData);
+            client->flush();
+        }
+    }
 
     if (message == "request_user_list")
     {
@@ -94,7 +118,20 @@ void MyTcpServer::onReadyRead(QTcpSocket *clientSocket)
         return;
     }
 
-    emit messageReceived(message, username);
+    int sepIndex = message.indexOf(": ");
+    if(message.contains(": "))
+    {   
+        QString sender = message.left(sepIndex);
+        QString msgBody = message.mid(sepIndex + 2);
+        emit logMessage(sender + ": " + msgBody);
+        emit messageReceived(msgBody , sender);
+    }
+    else 
+    {
+        QString sender = clientUsernames.value(clientSocket , "Unkonw");
+        emit logMessage(sender + ": " + message);
+        emit messageReceived(message , sender);
+    }
 
     QString forwardMessage = username + ": " + message + "\n";
     for (QTcpSocket* otherClient : clients)
@@ -128,8 +165,11 @@ void MyTcpServer::onDisconnected()
 
     emit logMessage("Client disconnected: " + username);
     emit messageReceived("disconnected" , username);
-    forwardCommandToOthers(clientSocket, "disconnected(" + username+")\n");
-    broadcastUserList();
+    sendToAllClients("disconnected(" + username+")\n");
+    QTimer::singleShot(100 , this , [this]()
+    {
+        broadcastUserList();
+    });
     clientSocket->deleteLater();
 }
 
@@ -164,16 +204,6 @@ QStringList MyTcpServer::getAllUsernames() const
 void MyTcpServer::broadcastUserList()
 {
     QStringList usernames = getAllUsernames();
-    /*
-    for (int i = 0; i < usernames.size(); ++i)
-    {
-        if (usernames[i] == musicplayerpagePtr->GetUserName())
-        {
-            usernames[i] += " (admin)";
-            //break;
-        }
-        emit logMessage(" hi " + usernames[i]);
-    }*/
 
     QString userListMsg = "userlist:" + usernames.join("|") + "|" +(musicplayerpagePtr->GetUserName() + " (admin)")  +"\n";
 
@@ -205,4 +235,3 @@ void MyTcpServer::removeUserByUsername(const QString &username)
 
     targetSocket->disconnectFromHost();
 }
-

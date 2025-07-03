@@ -14,17 +14,9 @@ musicplayerpage::musicplayerpage(QWidget *parent)
     setupVisualizerUI();
 
 
-
-    for(auto menu :ui->menubar->findChildren<QMenu*> ())
-    {
-        menu->setEnabled(true);
-        for(auto action :menu->actions())
-        {
-            action->setEnabled(true);
-            action->setVisible(true);
-        }
-    }
-
+    this->menuBar()->raise(); // مطمئن میشه منوبار بالاتر از همه ویجت‌هاست
+    this->menuBar()->setEnabled(true);
+    this->menuBar()->setVisible(true);
 
 }
 
@@ -154,12 +146,13 @@ void musicplayerpage:: setPlayer()
          addLogMessage(msg);
      });
 
-     connect(tcpServer, &MyTcpServer::playMusicRequested,this, &musicplayerpage::play_pause_network);
-     connect(tcpClient, &MyTcpClient::playMusicRequestedclient,this, &musicplayerpage::play_pause_network);
+     connect(tcpClient, &MyTcpClient::playSpecificSongRequested , this , &musicplayerpage::playSpecificSongRequested);
+     connect(tcpServer, &MyTcpServer::playSpecificSongRequested , this , &musicplayerpage::playSpecificSongRequested);
      connect(tcpClient, &MyTcpClient::updateDeviceList,this, &musicplayerpage::updateDeviceList);
      connect(tcpServer, &MyTcpServer::updateDeviceList,this, &musicplayerpage::updateDeviceList);
      connect(tcpClient, &MyTcpClient::adminNameReceived, this, &musicplayerpage::onAdminNameReceived);
      connect(ui->generalListView, &QListView::customContextMenuRequested, this, &musicplayerpage::showUserContextMenu);
+
      connect(tcpServer, &MyTcpServer::messageReceived, this, [this](const QString &msg, const QString &sender) {
          QMetaObject::invokeMethod(this,[this,msg,sender]()
                                    {

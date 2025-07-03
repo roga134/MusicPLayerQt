@@ -51,7 +51,7 @@ void musicplayerpage::on_pushButton_server_clicked()
         addLogMessage("you are client");
         return;
     }
-
+    //mach_songs = false;
     is_server = 1;
     tcpServer->startServer(1234);
 }
@@ -94,6 +94,7 @@ void musicplayerpage::on_pushButton_client_clicked()
         addLogMessage("you have clicked this button");
         return;
     }
+    //mach_songs = false;
     is_server = 2;
 
     ui->generalListView->setModel(logmodel);
@@ -105,7 +106,7 @@ void musicplayerpage::handleplaybutton()
 {
     if (is_server == 1)
     {
-        if(!ispause)
+        if (ispause)
         {
             tcpServer->sendToAllClients("play");
             addLogMessage("Sent 'play' to all clients");
@@ -116,10 +117,14 @@ void musicplayerpage::handleplaybutton()
             addLogMessage("Sent 'pause' to all clients");
         }
 
+        QTimer::singleShot(100, this, [=]() 
+        {
+            tcpServer->sendToAllClients("inplay:" + currentTrack->fileName());
+        });
     }
     else if (is_server == 2)
     {
-        if(!ispause)
+        if (ispause)
         {
             tcpClient->sendMessage("play");
         }
@@ -127,9 +132,14 @@ void musicplayerpage::handleplaybutton()
         {
             tcpClient->sendMessage("pause");
         }
+
+
+        QTimer::singleShot(100, this, [=]() 
+        {
+            tcpClient->sendMessage("inplay:" + currentTrack->fileName());
+        });
     }
 }
-
 
 void musicplayerpage::on_pushButton_chat_clicked()
 {
@@ -402,4 +412,8 @@ void musicplayerpage::showUserContextMenu(const QPoint &pos)
 void musicplayerpage::onAdminNameReceived(const QString &adminName)
 {
     serveruser = adminName;
+}
+QString musicplayerpage::getfilesong ()
+{
+    return currentTrack->toLocalFile();
 }

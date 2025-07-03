@@ -66,6 +66,8 @@ void musicplayerpage::on_pushButton_play_clicked()
     {
         execute_Command(std::make_unique<PauseCommand>(player));
         ui->pushButton_play->setIcon(QIcon(":/icons/image/play-buttton.png"));
+        visualizer->stop();
+        visualizer2->stop();
     }
     else
     {
@@ -85,6 +87,7 @@ void musicplayerpage::on_pushButton_play_clicked()
 
             execute_Command(std::make_unique<PlayCommand>(player, currentTrack));
             lastTrack = currentTrack;
+            ispause = false;
             ui->pushButton_play->setIcon(QIcon(":/icons/image/pause.png"));
 
             updateCurrentSongLabel();
@@ -95,7 +98,6 @@ void musicplayerpage::on_pushButton_play_clicked()
 
 void musicplayerpage::play_pause_network()
 {
-
 
     if (player->playbackState() == QMediaPlayer::PlayingState)
     {
@@ -135,35 +137,88 @@ void musicplayerpage::onItemDoubleClicked(const QModelIndex &index)
 {
     if(ispause)
     {
-        ispause = false;
+        ispause =false;
     }
     else
     {
         ispause = true;
     }
     handleplaybutton();
-    auto &playlist = playlists[currentPlaylistName];
-    int row = index.row();
 
-    if(row < 0 || row >= static_cast<int>(playlist.size()))
-    {
-        qDebug() << "Double clicked invalid index";
-        return;
-    }
+    //if (!mach_songs)
+   // {
+    //   return;
+    //}
+        auto &playlist = playlists[currentPlaylistName];
+        int row = index.row();
 
-    auto it = playlist.begin();
-    std::advance(it, row);
-    currentTrack = it;
+        if(row < 0 || row >= static_cast<int>(playlist.size()))
+        {
+            qDebug() << "Double clicked invalid index";
+            return;
+        }
 
-    execute_Command(std::make_unique<PlayCommand>(player, currentTrack));
-    updateCurrentSongLabel();
-    lastTrack = currentTrack;
-    ui->pushButton_play->setIcon(QIcon(":/icons/image/pause.png"));
+        auto it = playlist.begin();
+        std::advance(it, row);
+        currentTrack = it;
+
+        execute_Command(std::make_unique<PlayCommand>(player, currentTrack));
+        updateCurrentSongLabel();
+        lastTrack = currentTrack;
+        ui->pushButton_play->setIcon(QIcon(":/icons/image/pause.png"));
 }
 
+QString musicplayerpage::getCurrentSongName() const
+{
+    return currentTrack->fileName() ;
+}
+
+
+void musicplayerpage::playSpecificSongRequested(QString &songname)
+{
+    auto &playlist = playlists[currentPlaylistName];
+    bool found = false;
+
+    for (auto it = playlist.begin(); it != playlist.end(); ++it)
+    {
+        if (it->fileName() == songname)
+        {
+            currentTrack = it;
+            found = true;
+            break;
+        }
+    }
+    if(found)
+    {
+        //mach_songs = true;
+    }
+    if (!found)
+    {
+        //if(is_server == 2)
+        //{
+        //    tcpClient->sendMessage("mission file");
+        //}
+        //else if(is_server == 1)
+        //{
+
+        //}
+    }
+    play_pause_network();
+
+}
 void musicplayerpage::handleDoubleClickFromListView(QListView *listView, const QModelIndex &index)
 {
+    if(ispause)
+    {
+        ispause =false;
+    }
+    else
+    {
+        ispause = true;
+    }
+    handleplaybutton();
     QString matchedPlaylistName;
+
     for (auto it = playlistModels.begin(); it != playlistModels.end(); ++it)
     {
         if (listView->model() == it.value())
