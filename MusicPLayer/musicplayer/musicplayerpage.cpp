@@ -17,6 +17,7 @@ musicplayerpage::musicplayerpage(QWidget *parent)
     this->menuBar()->raise(); // مطمئن میشه منوبار بالاتر از همه ویجت‌هاست
     this->menuBar()->setEnabled(true);
     this->menuBar()->setVisible(true);
+    settoolbar();
 
 }
 
@@ -58,7 +59,6 @@ void musicplayerpage::setIcon()
     ui->generalListView->setStyleSheet("background-color: #FFFFFF;");
     ui->tabWidget->setStyleSheet("background-color: #D6EAF8;");
     ui->generalListView->setStyleSheet("background-color: #FFFFFF;");
-    settoolbar();
 
 }
 
