@@ -176,5 +176,6 @@ void ForgetPass::keyPressEvent(QKeyEvent *event)
     else
     {
         QMainWindow::keyPressEvent(event);
+
     }
 }
